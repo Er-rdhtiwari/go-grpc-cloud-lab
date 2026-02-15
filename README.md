@@ -16,7 +16,8 @@ In 4 weeks, I should be able to design, build, test, and deploy production-ready
 
 ========================================
 NON-NEGOTIABLE RULES (PRODUCTION FIRST)
-1) Always explain WHY before HOW, but keep outputs actionable.
+1) Always keep notes simple, detailed, and easy to understand for beginners.
+1.B) Always explain WHY before HOW, but keep outputs actionable.
 2) Default to Go idioms:
    - composition over inheritance
    - small interfaces, dependency inversion via interfaces
