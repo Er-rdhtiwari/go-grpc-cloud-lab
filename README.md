@@ -1,2013 +1,863 @@
+# 1-Month Beginner-Friendly Study Plan — IBM Cloud Data Services (Go + Kubernetes + CI/CD + GitOps)
 
-# Master Prompt (copy/paste daily)
+This role is basically: **build Go microservices**, **run them on Kubernetes**, **automate deploys with CI/CD + GitOps**, and **operate them in production** (alerts, on-call, security, reliability).
 
-```text
-You are my long-term mentor for a 4-week Golang + gRPC (NO REST) study plan for a Cloud Development role (IBM-style).
-Assume I’m strong in Python/Flask but NEW to Go.
+## Time options (pick one)
+- **Minimum (1 hour/day):** read notes + do the mini-lab steps (skip the extras).
+- **Ideal (2–3 hours/day):** notes + mini-lab + add 1 small capstone improvement daily.
 
-PRIMARY GOAL
-In 4 weeks, I should be able to design, build, test, and deploy production-ready gRPC microservices in Go with:
-- clean architecture, Go-style OOP, and solid design principles
-- protobuf API discipline (versioning + backward compatibility)
-- unit + integration tests (race-safe)
-- observability (logs/metrics/traces)
-- reliability (timeouts, retries discipline, graceful shutdown)
-- cloud readiness (Docker + Kubernetes + CI/CD)
+## Daily DSA track (Beginner → Medium, 30–45 min/day)
+Many interviews for this kind of role still ask **DSA (Data Structures & Algorithms)**.
+- Do **one DSA topic per day** + **3–5 practice questions** (mix easy/medium).
+- Focus on patterns you’ll reuse: **two pointers, sliding window, BFS/DFS, heaps, DP**, etc.
+- Track for every problem: **approach**, **time complexity**, **space complexity**, and **common mistakes**.
 
-========================================
-NON-NEGOTIABLE RULES (PRODUCTION FIRST)
-1) Always keep notes simple, detailed, and easy to understand for beginners.
-1.B) Always explain WHY before HOW, but keep outputs actionable.
-2) Default to Go idioms:
-   - composition over inheritance
-   - small interfaces, dependency inversion via interfaces
-   - constructors + explicit wiring (no magical DI containers)
-   - context propagation everywhere
-3) Every RPC must have:
-   - context deadlines/timeouts (client-side)
-   - proper status codes mapping (server-side)
-   - structured logs with request-id/trace-id
-4) gRPC only (no REST). You may mention optional edge patterns (grpc-gateway) briefly, but do not implement REST.
-5) API discipline is mandatory:
-   - never renumber fields
-   - use reserved fields
-   - use Buf lint + breaking checks
-6) Testing discipline is mandatory:
-   - table-driven tests
-   - go test ./... and go test -race ./... in CI
-   - gRPC tests using in-memory bufconn
-7) End each day with:
-   - Deliverable checklist + “done definition”
-   - Common mistakes (at least 5)
-   - 5 interview questions (IBM/cloud/microservices style)
-   - Tomorrow preview
+## How to use this plan (simple)
+- Each day has a **ready-to-copy prompt**. Paste it into ChatGPT (or your preferred LLM) to get **beginner-friendly notes + a mini-lab**.
+- Save outputs as `notes/day-XX.md` (optional).
+- Don’t try to master everything at once. You’ll revisit topics every week through the capstone.
 
-========================================
-ASSUMPTIONS (use unless I override)
-- Weekdays: ~2 hours/day, Weekends: 3–4 hours/day
-- Repo: go-grpc-cloud-lab
-- Go version: latest stable
-- Proto toolchain: Buf (format, lint, breaking), protoc-gen-go, protoc-gen-go-grpc
-- CI: GitHub Actions (or Jenkins style if asked)
-- Target runtime: Docker + Kubernetes
+## Before Day 1 (30–60 minutes)
+- Make sure you can run: `go version`, `git --version`, `docker version`, `kubectl version --client`, `helm version`
+- If you’re missing tools, install them first (Go, Docker, kubectl, Helm). Add `kind` or `minikube` later if needed.
 
-========================================
-REPO STRUCTURE (FOLLOW THIS THROUGHOUT)
-- /cmd/<service>/main.go        (entrypoint, wiring)
-- /internal/<service>/          (business logic, handlers, interceptors)
-- /internal/platform/           (logging, config, db, telemetry, auth utilities)
-- /api/proto/<service>/v1/      (protobuf definitions)
-- /pkg/                         (only if reusable outside repo; avoid initially)
-- /deploy/                      (docker, k8s, helm)
-- /scripts/                     (dev scripts)
-- Makefile                      (build/test/lint/proto/docker)
+## Key words (plain English)
+- **Microservice:** a small service that does one job (ex: Orders).
+- **gRPC + protobuf:** a fast way for services to talk; protobuf is the “message format”.
+- **Kubernetes (K8s):** runs your containers, restarts them, scales them, and connects them.
+- **Helm:** “package manager” for Kubernetes YAML (templating + releases).
+- **CI/CD:** automated build/test/release pipelines.
+- **GitOps:** Kubernetes deploys are driven by Git as the source of truth.
+- **Observability:** logs + metrics + traces so you can debug production issues.
+- **On-call:** you respond to alerts and fix incidents.
 
-========================================
-OUTPUT FORMAT YOU MUST FOLLOW (EVERY DAY)
-0) Progress Log (what was done so far + what’s pending + test status)
-1) Today’s goal (2–3 lines)
-2) Topics & subtopics (bullet list, include WHY + prod notes)
-3) Hands-on implementation steps:
-   - commands to run
-   - files to create/change
-   - copy-paste-ready code snippets
-4) Unit Testing tasks:
-   - at least 2 unit tests (table-driven)
-   - show how to run tests + race tests
-5) DSA block (15–30 min):
-   - 1 problem
-   - Go solution
-   - pattern + pitfalls
-6) Deliverable checklist (Definition of Done)
-7) Common mistakes (>=5)
-8) Interview questions (5)
-9) Tomorrow preview
+## Choose one option in each pair (to stay focused)
+- **CI:** GitHub Actions (simpler) OR Jenkins (common in enterprises)
+- **GitOps:** Argo CD (popular) OR Flux
+- **Queue:** RabbitMQ (task queue style) OR Kafka (event stream style)
+- **Cloud:** AWS OR Azure OR GCP (pick one and stick to it)
+- **IaC:** Terraform (recommended)
 
-========================================
-THE COMPLETE 4-WEEK DAILY PLAN (TOPICS + SUBTOPICS)
+## Capstone (you build this slowly across the month)
+Build a small **Go “orders” service** (gRPC) that:
+- Stores orders in **Postgres**
+- Uses **Redis** for caching (basic)
+- Publishes an **OrderCreated** message to a queue (RabbitMQ or Kafka)
+- Runs in **Kubernetes**, packaged with **Helm**, deployed with **GitOps**
+- Has basic **CI** (lint + test + build + scan)
+- Has **logs + metrics + traces**, plus 2–5 useful alerts and runbooks
 
--------------------------
-WEEK 1: Go Foundations + gRPC Basics + API Discipline
-Goal: become comfortable writing Go, designing proto APIs, and building a tested gRPC service.
+---
 
-DAY 1 — Setup + Go mindset + project skeleton
-Topics/Subtopics:
-- Install Go toolchain, GOPATH vs modules, go env
-- go mod init/tidy/vendor basics
-- gofmt/goimports, go test basics, go doc
-- VSCode/GoLand settings (format-on-save, lint, test runner)
-- project layout: cmd/internal/api/deploy
-Hands-on:
-- repo init + Makefile base targets: fmt, test, race, lint placeholder, proto placeholder
-- hello CLI + context usage mini snippet
-Testing:
-- simple unit test for utility function
-DSA:
-- arrays/slices basics + time complexity
-Deliverable:
-- repo skeleton + Makefile + first commit
+## Week 1 — Production Go for Microservices (Days 1–7)
 
-DAY 2 — Go types + structs + methods + interfaces (Go-style OOP)
-Topics/Subtopics:
-- value vs pointer receivers
-- structs embedding (composition)
-- interface as contracts; small interfaces (io.Reader style)
-- constructors: NewX(...) pattern; options pattern intro
-- SOLID mapping to Go (SRP, DIP via interfaces, ISP via small interfaces)
-Hands-on:
-- implement Service interface + concrete implementation
-- add mock via manual stub (no framework yet)
-Testing:
-- table-driven tests using stubbed dependency
-DSA:
-- hashmap frequency counting problem
+### Day 1 — Go project structure + tooling fundamentals
+**Goals**
+- Set up a “production-ready” Go workspace: modules, linting, formatting, dependency hygiene
+- Learn conventions: `cmd/`, `internal/`, `pkg/`, config, logging
+**DSA (30–45 min):** Big-O basics + Arrays
 
-DAY 3 — Errors + logging + defensive coding
-Topics/Subtopics:
-- error wrapping: fmt.Errorf("%w"), errors.Is/As
-- sentinel vs typed errors; avoiding “string matching”
-- domain errors → gRPC status mapping strategy
-- logging: structured logs, log levels, correlation id
-Hands-on:
-- error package: AppError or sentinel errors
-- logging wrapper (slog/zap style) + request-id context propagation
-Testing:
-- tests for error mapping / wrapping behavior
-DSA:
-- stack/queue basics (valid parentheses)
+**Ready-to-copy prompt**
+```
+You are a patient Golang mentor. Assume I am a beginner and explain everything in simple words first, then go deeper. Define any new terms.
 
-DAY 4 — Concurrency + context cancellation (cloud critical)
-Topics/Subtopics:
-- goroutines, channels, select, time.After/ticker
-- context cancellation patterns: parent/child, timeouts
-- worker pool + backpressure basics
-- sync primitives: WaitGroup, Mutex (when/when not)
-Hands-on:
-- worker pool module + safe shutdown
-Testing:
-- concurrency test + race-safe patterns
-DSA:
-- two pointers (sorted array two-sum / container water concept)
+Day 1 topic: Production Go project structure + tooling.
 
-DAY 5 — Protobuf API design + Buf workflow (non-negotiable)
-Topics/Subtopics:
-- proto3 essentials: package, import, options, go_package
-- naming conventions: messages, services, RPCs
-- field numbering rules; reserved fields; backward compatibility
-- oneof, enums, wrappers, timestamps, repeated/map
-- API versioning approach: /v1, /v2 strategy
-- Buf: format, lint, breaking changes checks
-Hands-on:
-- create api/proto/<service>/v1/*.proto
-- generate stubs
-- buf.yaml + buf.gen.yaml
-Testing:
-- compile/proto generation in CI target
-DSA:
-- sorting + complexity (quick overview)
+Create descriptive notes that include:
+1) A clear explanation of Go modules, versioning, and dependency management (replace/replace pitfalls).
+2) Recommended repo layout for microservices (cmd/internal/pkg), with pros/cons and when to break into multiple modules.
+3) A practical “baseline toolchain” list: gofmt, go test, go vet, staticcheck, golangci-lint, govulncheck, buf (if using protobuf), and why each matters.
+4) A checklist for a new microservice repo (Makefile targets, CI tasks, build tags, config, logging).
+5) A short exercise: propose a directory layout for a gRPC service called “orders” and show example file names.
 
-DAY 6 (Weekend) — gRPC server/client (Unary) + deadlines + metadata
-Topics/Subtopics:
-- server bootstrap, client dial options
-- unary RPC lifecycle: interceptor chain concept
-- metadata: request headers, auth token carrier
-- deadlines/timeouts: client enforced + server respecting ctx
-- status codes: InvalidArgument, NotFound, Internal, Unavailable, etc.
-Hands-on:
-- implement unary RPCs: Create/Get/List pattern
-- implement basic validation (manual now; upgrade later)
-Testing:
-- bufconn-based gRPC tests (in-memory server)
-DSA:
-- BFS/DFS intro (number of islands style)
+Keep it structured with headings, bullet points, and short code snippets where useful.
+Include: Key terms (with 1-line definitions), 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with 5 interview questions and strong sample answers.
 
-DAY 7 (Weekend) — Testing deep dive + CI gates baseline
-Topics/Subtopics:
-- table-driven tests patterns
-- test helpers, golden tests (optional)
-- go test flags, coverage, -race
-- basic CI pipeline steps
-Hands-on:
-- add bufconn tests for multiple RPC cases
-- add CI config: fmt + test + race + buf lint + buf breaking (baseline)
-DSA:
-- recursion basics + pitfalls
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Big-O basics + Arrays.
+- Explain with simple examples: time vs space, common array operations, when arrays are good/bad.
+- Give 5 practice questions (2 easy, 3 medium) with: approach, time/space complexity, and Go-style pseudocode.
+```
 
-Week 1 PoC Deliverable:
-- A working gRPC service + client
-- Buf lint + breaking checks wired
-- bufconn unit tests + race test green
-- README “how to run” instructions
+### Day 2 — Concurrency, context, cancellation, timeouts
+**DSA (30–45 min):** Strings + HashMap/Set basics
+**Ready-to-copy prompt**
+```
+You are a patient Golang mentor. Assume I am a beginner. Start with a simple mental model, then go deeper. Define any new terms.
 
--------------------------
-WEEK 2: Production Skeleton (Interceptors, Auth, Health, Shutdown, Docker)
-Goal: convert service into a real production-ready skeleton.
+Day 2 topic: Go concurrency + context.
 
-DAY 8 — Interceptors (middleware equivalent)
-Topics/Subtopics:
-- unary interceptors: chain order
-- logging interceptor (structured)
-- request-id/trace-id propagation (context values)
-- panic recovery interceptor
-Hands-on:
-- implement interceptors package
-Testing:
-- unit test interceptor behavior (ensures request-id present, panic recovered)
-DSA:
-- linked list fundamentals
+Write descriptive notes covering:
+1) Goroutines, channels, select, worker pools, backpressure.
+2) context.Context: propagation, cancellation, deadlines, timeouts (especially for DB + RPC calls).
+3) Common pitfalls: goroutine leaks, unbounded concurrency, shared memory races.
+4) Patterns: errgroup, bounded parallelism, retries with jitter, circuit breaker concept (no need for a library).
+5) Debugging: race detector, pprof basics for goroutines.
 
-DAY 9 — AuthN/AuthZ basics for gRPC
-Topics/Subtopics:
-- metadata bearer token, per-RPC credentials concept
-- auth interceptor: validate token, attach principal to context
-- authorization: role checks stub
-Hands-on:
-- auth middleware stub + principal context
-Testing:
-- auth success/fail tests with metadata
-DSA:
-- sliding window basics
+Mini-lab:
+- Provide a small Go example that runs N concurrent tasks with a timeout, cancels on first error, and avoids leaks.
 
-DAY 10 — Config + wiring + clean architecture boundaries
-Topics/Subtopics:
-- config via env → struct
-- avoid global state; explicit dependencies
-- layering: handler (transport) vs service (business) vs repo (data)
-Hands-on:
-- config loader + constructors + wiring in cmd/
-Testing:
-- config parsing tests
-DSA:
-- binary search
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a “production checklist” for concurrency in services.
 
-DAY 11 — Reliability discipline (timeouts, retries rules, keepalive)
-Topics/Subtopics:
-- deadline policy: defaults per RPC
-- retry rules: idempotent only, exponential backoff concept
-- keepalive basics; connection reuse
-Hands-on:
-- client factory + default call options for timeouts
-Testing:
-- test that client sets deadlines in context
-DSA:
-- heap/priority queue intro (top K)
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Strings + HashMap/Set basics.
+- Teach: frequency counting, anagrams, duplicates, first unique, and common pitfalls.
+- Give 5 practice questions (2 easy, 3 medium) with hints + final solutions in Go.
+```
 
-DAY 12 — Health + readiness + reflection
-Topics/Subtopics:
-- gRPC health service
-- readiness vs liveness mapping
-- reflection for dev; disable in prod if needed
-Hands-on:
-- implement health endpoints + readiness based on deps (db later)
-Testing:
-- health check tests via bufconn
-DSA:
-- tree traversal (BFS/DFS)
+### Day 3 — API design: gRPC + protobuf + error semantics
+**DSA (30–45 min):** Two pointers (array/string)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain with simple examples and define any new terms.
 
-DAY 13 (Weekend) — Graceful shutdown + Docker packaging
-Topics/Subtopics:
-- SIGTERM handling, stop accepting requests, drain
-- server.GracefulStop vs Stop behavior
-- multi-stage Docker build, minimal runtime
-Hands-on:
-- add graceful shutdown
-- Dockerfile + make docker-build/run
-Testing:
-- shutdown behavior smoke test (best effort)
-DSA:
-- DP intro (climbing stairs)
+Day 3 topic: gRPC + protobuf for microservices.
 
-DAY 14 (Weekend) — Week 2 PoC finalize + dev scripts
-Topics/Subtopics:
-- developer UX: scripts, make targets, local run
-- basic load smoke test (simple client loop)
-Hands-on:
-- scripts/run_local.sh, scripts/load.sh
-- finalize README + architecture notes
-Testing:
-- ensure CI green
-DSA:
-- hashset pattern (contains duplicate)
+Create descriptive notes including:
+1) When to use gRPC vs REST in internal platforms.
+2) Protobuf fundamentals: messages, enums, field numbers, optional fields, backward compatibility rules.
+3) API versioning strategies (package names, service names, message evolution).
+4) Error handling: gRPC status codes, mapping domain errors, returning details, retries vs non-retries.
+5) Security basics: mTLS concept, authn/authz patterns at gateway and service levels.
 
-Week 2 PoC Deliverable:
-- production skeleton with interceptors + auth stub + health + graceful shutdown + docker
-- CI gates: fmt, test, race, buf lint, buf breaking, docker build
+Mini-lab:
+- Design an `OrderService` proto (Create/Get/List) with pagination and idempotency key.
+- Show examples of request/response messages and how you would handle errors.
 
--------------------------
-WEEK 3: Real Backend + Streaming + Observability
-Goal: add persistence, streaming RPCs, and real observability hooks.
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with 10 proto design “dos and don’ts”.
 
-DAY 15 — Postgres integration + repository pattern
-Topics/Subtopics:
-- db connection pooling basics
-- repo interfaces + implementations
-- transaction boundary placement
-Hands-on:
-- add repository layer + db module (pgx/database/sql)
-Testing:
-- unit test service with repo mock
-DSA:
-- graph basics (adjacency list)
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Two pointers.
+- Teach patterns: left/right, slow/fast, removing duplicates in-place, palindrome checks.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
 
-DAY 16 — Migrations + transactions + idempotency concept
-Topics/Subtopics:
-- migrations tool concept (migrate/goose)
-- idempotency keys for writes (concept + simple approach)
-- consistent error mapping for db errors
-Hands-on:
-- migrations setup + first schema
-Testing:
-- repo tests (if using testcontainers optional) or mock-based
-DSA:
-- DP (coin change lite / min steps)
+### Day 4 — Testing in Go: unit, integration, mocks, table-driven tests
+**DSA (30–45 min):** Sorting + Binary search basics
+**Ready-to-copy prompt**
+```
+You are a patient Go testing mentor. Assume I am a beginner. Define terms like unit test, integration test, mock, fake, and table-driven test.
 
-DAY 17 — Streaming RPC (server-stream OR bidi)
-Topics/Subtopics:
-- streaming patterns, cancellation, backpressure
-- message batching, heartbeat concept (if long streams)
-Hands-on:
-- implement streaming RPC
-Testing:
-- streaming test via bufconn (read N messages, cancel early)
-DSA:
-- monotonic stack intro (next greater element)
+Day 4 topic: Testing in Go for production microservices.
 
-DAY 18 — Observability: logs + metrics + traces (production mindset)
-Topics/Subtopics:
-- structured logging fields standard
-- metrics: request count, latency histograms concept
-- tracing: context propagation, spans per RPC
-Hands-on:
-- add observability hooks (minimal but correct wiring)
-Testing:
-- verify interceptors add fields / propagate trace context (best effort)
-DSA:
-- recursion/backtracking (subsets)
+Write descriptive notes that cover:
+1) Table-driven tests, subtests, golden tests, and coverage expectations.
+2) Mocking strategies: interfaces, fakes, testify/mock vs hand-rolled fakes, and tradeoffs.
+3) Testing concurrency: avoiding flakes, using timeouts, deterministic patterns.
+4) Integration tests with Postgres/Redis (describe approaches with Docker Compose or testcontainers).
+5) CI test strategy: fast unit tests vs slower integration tests; caching; parallelization.
 
-DAY 19 — Performance hygiene + benchmarking + profiling intro
-Topics/Subtopics:
-- avoid per-request allocations; reuse clients
-- benchmarking with go test -bench
-- basic pprof concept (CPU/mem)
-Hands-on:
-- write benchmark for hot function
-- add perf checklist to README
-Testing:
-- benchmark command documented
-DSA:
-- greedy basics (interval scheduling style)
+Mini-lab:
+- Provide a sample service function and show a good test suite structure (unit + integration outline).
 
-DAY 20 (Weekend) — Build Week 3 PoC (DB + streaming + obs)
-Hands-on:
-- full integration local run (docker-compose optional)
-- stabilize errors/status mapping
-Testing:
-- integration tests (optional) OR expanded unit tests
-DSA:
-- trie basics (prefix search concept)
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with “How to write bug-preventing tests” checklist.
 
-DAY 21 (Weekend) — Testing depth + contract discipline
-Topics/Subtopics:
-- integration testing strategies (testcontainers-go optional)
-- contract tests mindset
-- Buf breaking change workflow (baseline file + checks)
-Hands-on:
-- add at least 1 integration test OR stronger bufconn suite
-- finalize “API evolution rules” section in README
-DSA:
-- union-find (disjoint set) intro
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Sorting + Binary search basics.
+- Teach: when to sort, stable vs unstable (high-level), binary search template, off-by-one mistakes.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
 
-Week 3 PoC Deliverable:
-- service backed by Postgres + streaming RPC + observability wiring
-- meaningful tests + CI green
+### Day 5 — Configuration, logging, and error handling conventions
+**DSA (30–45 min):** Stack + Queue (and common uses)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain configuration and logging like I’ve never deployed to Kubernetes before.
 
--------------------------
-WEEK 4: Cloud Ready System (2 Services, TLS, K8s, CI/CD, Final Polish)
-Goal: build a mini cloud-native gRPC system deployable to K8s.
+Day 5 topic: Config + logging + error handling in Go services.
 
-DAY 22 — Split into 2 services (service-to-service gRPC)
-Topics/Subtopics:
-- service boundaries, proto boundaries
-- client reuse inside server; timeouts
-- metadata propagation between services
-Hands-on:
-- Service A calls Service B over gRPC
-Testing:
-- unit tests for client wrapper + service behavior
-DSA:
-- topological sort intro
+Create descriptive notes including:
+1) Config sources: env vars, config files, Kubernetes ConfigMaps/Secrets.
+2) 12-factor configuration principles and anti-patterns.
+3) Structured logging: fields, correlation IDs, request IDs, log levels, sampling.
+4) Error handling: wrapping, sentinel errors vs typed errors, returning vs logging, user-facing vs internal errors.
+5) Graceful shutdown: signal handling, draining, timeouts, in-flight requests.
 
-DAY 23 — TLS (and mTLS stretch) + security posture
-Topics/Subtopics:
-- TLS on gRPC server/client
-- cert generation for dev
-- mTLS concept: identity, rotation
-Hands-on:
-- enable TLS locally
-Testing:
-- TLS connection smoke test
-DSA:
-- bit manipulation basics
+Mini-lab:
+- Show a small Go “main” skeleton for a service that loads config, starts a server, handles SIGTERM, and logs structured events.
 
-DAY 24 — Resilience patterns (careful + disciplined)
-Topics/Subtopics:
-- retry/backoff rules (idempotent only)
-- circuit breaker concept (minimal implementation or library concept)
-- rate limiting interceptor (token bucket concept)
-Hands-on:
-- implement rate limiting + retry policy skeleton
-Testing:
-- unit tests for limiter behavior
-DSA:
-- LRU cache concept (design)
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with an interview-style explanation of graceful shutdown in Kubernetes.
 
-DAY 25 — Kubernetes deploy patterns for gRPC
-Topics/Subtopics:
-- Deployment/Service, resource requests/limits
-- readiness/liveness using gRPC health
-- configmaps/secrets basics
-Hands-on:
-- K8s manifests for both services
-Testing:
-- k8s smoke checklist (kubectl commands)
-DSA:
-- binary tree level order
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Stack + Queue.
+- Teach: valid parentheses, next greater element (intro), BFS queue idea (preview).
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
 
-DAY 26 — CI/CD hardened pipeline (cloud role expectations)
-Topics/Subtopics:
-- pipeline stages: fmt, lint, test, race, buf, docker build
-- tagging/versioning strategy
-- basic security hygiene (dependency scan concept)
-Hands-on:
-- finalize CI pipeline config
-Testing:
-- ensure pipeline passes end-to-end
-DSA:
-- string patterns (anagrams/grouping)
+### Day 6 — Service reliability patterns: retries, idempotency, rate limiting
+**DSA (30–45 min):** Linked List basics (slow/fast pointers)
+**Ready-to-copy prompt**
+```
+You are a patient distributed-systems mentor. Assume I am a beginner. Use simple examples (like “retrying a payment” or “placing an order twice”).
 
-DAY 27 (Weekend) — Helm (or Kustomize) + deploy
-Topics/Subtopics:
-- Helm chart structure: values, templates
-- environment overlays (dev/stage/prod concept)
-Hands-on:
-- helm chart for both services + values.yaml
-Testing:
-- helm template render check
-DSA:
-- system design DSA hybrid: consistent hashing concept
+Day 6 topic: Reliability patterns for distributed systems.
 
-DAY 28 (Weekend) — Final hardening + interview package
-Topics/Subtopics:
-- load test strategy; bottleneck checklist
-- production readiness checklist
-- architecture diagram + trade-offs writeup
-Hands-on:
-- final README + diagrams + runbook
-- generate interview Q bank (30–40)
-Testing:
-- final green: fmt/test/race/buf/docker
-DSA:
-- revision: pick 3 patterns and summarize
+Write descriptive notes covering:
+1) Timeouts, retries (exponential backoff + jitter), and when NOT to retry.
+2) Idempotency keys and deduplication (especially for Create operations).
+3) Rate limiting (token bucket/leaky bucket), load shedding, bulkheads.
+4) Circuit breakers and dependency health.
+5) Exactly-once vs at-least-once semantics in message queues.
 
-Week 4 Final Deliverable:
-- 2 gRPC services, TLS enabled, deployable on Kubernetes (with health checks)
-- CI/CD gates, observability hooks, resilience basics
-- production checklist + interview Q pack
+Mini-lab:
+- Propose an idempotent CreateOrder flow (DB schema hints + logic outline).
 
-========================================
-NOW START TODAY
-Ask me only ONE question:
-“Which Day number are you on (1–28)?”
-If I don’t answer, default to Day 1.
-Then produce TODAY’s content strictly in the Output Format above.
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with 8 “failure modes” and how to mitigate them.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Linked List basics.
+- Teach: traverse, reverse, cycle detection (Floyd), merge two lists.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 7 — Weekly review + small capstone checkpoint
+**DSA (30–60 min):** Week 1 mixed practice (easy → medium)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Keep the review very practical.
+
+Day 7 topic: Weekly review + checkpoint.
+
+1) Summarize the key takeaways from Days 1–6 in a concise study sheet.
+2) Create a short self-assessment quiz (15 questions) with answers.
+3) Provide a plan to implement the Week 1 checkpoint in a repo:
+   - gRPC proto drafted
+   - Go module initialized
+   - Basic service skeleton + graceful shutdown
+   - Unit test example
+
+Keep it practical and focused on production readiness.
+
+DSA Track:
+- Create a review sheet for Week 1 DSA topics (arrays, strings/hashmap, two pointers, binary search, stack/queue, linked list).
+- Give 8 practice questions total (4 easy, 4 medium) with brief solutions and complexity.
 ```
 
 ---
 
-## Weekly PoCs (what you’ll build)
-
-### Week 1 PoC — “Hello-Prod gRPC”
-
-A single service + client:
-
-* Unary RPCs, config, logging, deadlines, basic validation
-* Unit tests using in-memory gRPC (`bufconn`)
-* Buf lint + breaking checks wired into CI
-
-### Week 2 PoC — “Production Service Skeleton”
-
-Same service upgraded to production shape:
-
-* Interceptors: logging, auth stub, metrics hook, panic recovery
-* Health checking + reflection + graceful shutdown
-* Docker image + minimal CI pipeline
-
-### Week 3 PoC — “Real Backend + Streaming + Observability”
-
-* Postgres integration (repo layer, migrations)
-* Server streaming or bidirectional streaming
-* OpenTelemetry tracing + Prometheus metrics (concept + wiring)
-* Concurrency patterns: worker pool, errgroup
-
-### Week 4 PoC — “Cloud-Ready Mini System”
-
-Two gRPC services (service-to-service calls):
-
-* mTLS (or at least TLS) + auth propagation (metadata)
-* Resilience: retries/backoff where appropriate, strict timeouts
-* Kubernetes manifests/Helm chart, readiness/liveness using gRPC health
-* Load testing + benchmark + final “production checklist”
-
----
-
-## 4-Week Daily Study Plan (Day-by-Day)
-
-### Week 1 — Go foundations + gRPC basics + API discipline
-
-**Day 1:** Go setup + “Go mindset”
-
-* Install Go 1.26, `gofmt`, `go test`, `govulncheck` (optional)
-* Go project layout: `cmd/`, `internal/`, `pkg/`, `api/`
-* Practice: write small CLI + learn `context` basics
-
-**Day 2:** Go types, structs, methods, interfaces (Go-style OOP)
-
-* Composition over inheritance, interface-driven design
-* “SOLID in Go” mapping (SRP, DIP via interfaces, etc.)
-* Mini exercise: service interface + implementation + mock
-
-**Day 3:** Error handling done right
-
-* `errors.Is/As`, wrapping, sentinel errors vs typed errors
-* Do/Don’t: avoid panic, avoid “stringly typed” errors
-* Add structured logging (zap/slog style conceptually)
-
-**Day 4:** Concurrency essentials
-
-* Goroutines, channels, select, cancellation
-* Patterns: worker pool, fan-in/out, backpressure basics
-* Exercise: concurrent request simulator
-
-**Day 5:** Protobuf + Buf workflow
-
-* Proto3 API design basics: field numbering, `oneof`, enums, reserved
-* Add Buf format + lint + breaking rules ([GitHub][3])
-* Generate Go stubs
-
-**Day 6 (Weekend):** gRPC core mechanics
-
-* Unary RPC, server/client, metadata, status codes
-* Deadlines and cancellation (must-have in prod) ([gRPC][2])
-* Start Week1 PoC repo (service + client)
-
-**Day 7 (Weekend):** Testing foundation
-
-* Table-driven tests, `t.Parallel()`, coverage
-* gRPC tests with `bufconn` (in-memory)
-* CI gate: `go test ./...`, `go test -race ./...`, buf lint/breaking
-
-✅ **Week 1 deliverable:** “Hello-Prod gRPC” running locally + test suite + CI checks.
-
----
-
-### Week 2 — Production skeleton: interceptors, health, shutdown, docker
-
-**Day 8:** Interceptors (middleware of gRPC)
-
-* Unary interceptor chain: logging, request-id, timing
-* Error mapping: domain errors → gRPC status codes
-
-**Day 9:** AuthN/AuthZ basics for gRPC
-
-* Metadata tokens, per-RPC credentials concept
-* Simple auth interceptor (validate token, attach principal)
-
-**Day 10:** Config + dependency injection (Go way)
-
-* Config via env + struct parsing (no global mutable state)
-* Wire dependencies: constructors + interfaces
-
-**Day 11:** Reliability basics (timeouts + retries discipline)
-
-* Deadlines everywhere; retry only for safe operations
-* Keepalive basics (avoid broken connections surprises) ([gRPC][5])
-
-**Day 12:** Health checking + reflection
-
-* Implement standard gRPC health service ([gRPC][6])
-* K8s readiness approach for gRPC ([Kubernetes][4])
-
-**Day 13 (Weekend):** Graceful shutdown + Docker
-
-* `SIGTERM` handling, stop accepting new RPCs, drain
-* Multi-stage Dockerfile, minimal runtime
-
-**Day 14 (Weekend):** Week 2 PoC completion
-
-* Finish interceptors + health + docker + CI improvements
-* Add basic load test script (even a simple loop + concurrency)
-
-✅ **Week 2 deliverable:** production-ish gRPC service skeleton with health checks + graceful shutdown + dockerized.
-
----
-
-### Week 3 — Real backend + streaming + observability
-
-**Day 15:** Persistence (Postgres) + repo pattern
-
-* `database/sql` basics, connection pooling
-* Repositories + transactions + migration tool concept
-
-**Day 16:** Schema + migrations + idempotency
-
-* Migration discipline
-* Idempotency keys (concept), safe retries
-
-**Day 17:** Streaming RPC (pick one)
-
-* Server streaming (easy to reason) or bidi streaming (harder)
-* Backpressure and cancellation via context
-
-**Day 18:** Observability mindset
-
-* Structured logs (correlation ids)
-* Tracing concepts (OpenTelemetry), metrics concepts (Prometheus)
-
-**Day 19:** Performance hygiene
-
-* Reuse channels/connections, avoid per-RPC setup overhead ([gRPC][7])
-* Benchmarking with `go test -bench`
-* Profiling concepts (pprof intro)
-
-**Day 20 (Weekend):** Week 3 PoC build day
-
-* Integrate DB + streaming endpoint
-* Add trace/metric hooks (even if minimal)
-
-**Day 21 (Weekend):** Testing depth
-
-* Integration tests with docker-compose (optional)
-* Contract thinking: proto compatibility checks in CI (Buf breaking)
-
-✅ **Week 3 deliverable:** service backed by Postgres + streaming + observability hooks + meaningful tests.
-
----
-
-### Week 4 — Cloud-ready system: security, k8s, CI/CD, final polish
-
-**Day 22:** Split into 2 services (service-to-service gRPC)
-
-* Define proto boundaries (no shared DB)
-* Client creation best practices (reuse, timeouts)
-
-**Day 23:** TLS/mTLS basics
-
-* Server TLS, client TLS
-* mTLS concept for service identity (common in enterprise)
-  (You’ll implement minimal viable TLS; mTLS as stretch)
-
-**Day 24:** Resilience patterns
-
-* Retries with backoff (careful), circuit breaker concept
-* Rate limiting concept (interceptor level)
-
-**Day 25:** Kubernetes readiness
-
-* Deployments, services
-* gRPC health checks and probes (production pattern) ([Kubernetes][4])
-
-**Day 26:** CI/CD pipeline “done right”
-
-* Lint + tests + race + buf lint/breaking + docker build
-* Versioning: tags, release artifacts
-
-**Day 27 (Weekend):** Helm (or kustomize) + deploy
-
-* Deploy both services
-* Add configs, secrets (concept), resource limits
-
-**Day 28 (Weekend):** Final hardening + interview readiness
-
-* Load test + benchmarks
-* “Production checklist” doc + architecture diagram
-* 30–40 interview Qs (gRPC, Go design, reliability)
-
-✅ **Week 4 deliverable:** 2-service gRPC system deployable on Kubernetes with health checks, TLS, CI gates, and a production-readiness checklist.
-
----
-
-## Production Do’s and Don’ts (gRPC + Go)
-
-**Do**
-
-* Set **deadlines/timeouts** on every RPC. ([gRPC][2])
-* Reuse clients/channels; avoid recreating per request. ([gRPC][7])
-* Use standard **gRPC health checking** for probes. ([gRPC][6])
-* Use Buf lint + breaking checks to prevent API regressions. ([GitHub][3])
-* Run `go test -race` in CI for concurrent code.
-
-**Don’t**
-
-* Don’t ship without proto backward-compatibility discipline (field numbers, reserved fields).
-* Don’t hide failures: map errors to gRPC status codes consistently.
-* Don’t use retries blindly (especially for non-idempotent writes).
-* Don’t ignore graceful shutdown (K8s will SIGTERM you).
-
----
-
-# Master Prompt (copy/paste daily)
-
-Paste this **every day** in ChatGPT. It contains the **full daily plan** and forces “production-ready” outputs.
-
-```text
-You are my daily mentor for a 4-week Golang + gRPC (no REST) learning plan for a Cloud Development role (IBM-style). 
-Assume I’m strong in Python/Flask but new to Go.
-
-RULES
-- Production-first: always include best practices, pitfalls, Do/Don’t, and “why” behind decisions.
-- Every day must include: (1) concept notes, (2) hands-on tasks, (3) unit testing tasks, (4) DSA practice (15–30 mins), (5) a small deliverable.
-- Provide copy-paste-ready code where relevant (Go + proto + tests + Makefile snippets).
-- Prefer Go idioms: composition, interfaces for dependency inversion, constructors, context propagation, graceful shutdown.
-- End each day with: checklist, common mistakes, 5 interview questions, and “tomorrow preview”.
-- Keep a running “Progress Log” at top (Day done? repo links? test status?).
-
-ASSUMPTIONS (use unless I override)
-- Weekdays: ~2 hours. Weekends: ~3–4 hours.
-- Repo name: go-grpc-cloud-lab
-- Tooling: Go 1.26+, Buf for proto workflow, go test (+race), and basic Docker/K8s by week 4.
-
-========================================
-THE 4-WEEK PLAN (Day-by-Day)
-Week 1 — Go foundations + gRPC basics + API discipline
-Day 1: Go setup, modules, project layout (cmd/internal/pkg), context intro; deliver: tiny CLI + skeleton repo
-Day 2: Structs/methods/interfaces (Go OOP), composition, SOLID mapping; deliver: interface + impl + mock scaffold
-Day 3: Error handling (wrap, errors.Is/As), logging strategy; deliver: error utilities + structured logger wrapper
-Day 4: Concurrency (goroutines/channels/select), cancellation; deliver: worker pool example + tests
-Day 5: Protobuf + Buf (format/lint/breaking), proto API design rules; deliver: proto + generated stubs
-Day 6: gRPC unary service/client, metadata, status codes, deadlines; deliver: running service + client
-Day 7: Testing for gRPC (bufconn), table-driven tests, CI basics; deliver: passing tests + CI checks
-
-Week 2 — Production skeleton: interceptors, health, shutdown, docker
-Day 8: Interceptors chain (logging, request-id, timing), error mapping; deliver: interceptor package
-Day 9: Auth basics (metadata token), auth interceptor; deliver: auth stub + tests
-Day 10: Config + dependency injection pattern; deliver: config loader + wiring
-Day 11: Reliability discipline: timeouts, retries rules, keepalive overview; deliver: client options + timeout policy
-Day 12: Health checking + reflection; deliver: health service + readiness strategy
-Day 13: Graceful shutdown (SIGTERM, drain), Docker multi-stage; deliver: dockerized service
-Day 14: Week2 PoC finalize + simple load script; deliver: release-ready skeleton
-
-Week 3 — Real backend + streaming + observability
-Day 15: Postgres integration, repo pattern, pooling; deliver: repo layer + unit tests (mock db)
-Day 16: Migrations + transactions + idempotency concept; deliver: migration + transactional method
-Day 17: Streaming RPC (server-stream or bidi), backpressure + ctx cancel; deliver: streaming endpoint + tests
-Day 18: Observability: logging correlation, tracing concepts, metrics concepts; deliver: tracing/metrics hooks stub
-Day 19: Performance hygiene: reuse clients, benchmarks, basic pprof; deliver: benchmark + perf checklist
-Day 20: Build Week3 PoC (DB + streaming + minimal OTel/metrics); deliver: runnable compose or local setup
-Day 21: Testing depth: integration tests + buf breaking in CI; deliver: integration test + CI gates
-
-Week 4 — Cloud-ready system: security, k8s, CI/CD, final polish
-Day 22: Split into 2 services, service-to-service gRPC; deliver: service A calls service B
-Day 23: TLS (and mTLS as stretch), auth propagation; deliver: TLS-enabled client/server
-Day 24: Resilience: backoff retries, circuit breaker concept, rate limiting; deliver: resilience interceptor
-Day 25: Kubernetes deployment, probes using gRPC health; deliver: manifests/values
-Day 26: CI/CD: lint+test+race+buf+docker build, versioning; deliver: pipeline config
-Day 27: Helm (or kustomize) deploy both services, configs/secrets; deliver: helm chart or kustomize base
-Day 28: Final hardening: load test, benchmarks, production checklist, interview Q bank; deliver: final README + diagram
-
-========================================
-
-[1]: https://go.dev/blog/go1.26?utm_source=chatgpt.com "Go 1.26 is released"
-[2]: https://grpc.io/docs/guides/deadlines/?utm_source=chatgpt.com "Deadlines"
-[3]: https://github.com/bufbuild/buf?utm_source=chatgpt.com "bufbuild/buf: The best way of working with Protocol Buffers."
-[4]: https://kubernetes.io/blog/2018/10/01/health-checking-grpc-servers-on-kubernetes/?utm_source=chatgpt.com "Health checking gRPC servers on Kubernetes"
-[5]: https://grpc.io/docs/guides/keepalive/?utm_source=chatgpt.com "Keepalive"
-[6]: https://grpc.io/docs/guides/health-checking/?utm_source=chatgpt.com "Health Checking"
-[7]: https://grpc.io/docs/guides/performance/?utm_source=chatgpt.com "Performance Best Practices"
----
-
-# Master Prompt (copy/paste daily)
-
-```text
-You are my long-term mentor for a 4-week Golang + gRPC (NO REST) study plan for a Cloud Development role (IBM-style).
-Assume I’m strong in Python/Flask but NEW to Go.
-
-PRIMARY GOAL
-In 4 weeks, I should be able to design, build, test, and deploy production-ready gRPC microservices in Go with:
-- clean architecture, Go-style OOP, and solid design principles
-- protobuf API discipline (versioning + backward compatibility)
-- unit + integration tests (race-safe)
-- observability (logs/metrics/traces)
-- reliability (timeouts, retries discipline, graceful shutdown)
-- cloud readiness (Docker + Kubernetes + CI/CD)
-
-========================================
-NON-NEGOTIABLE RULES (PRODUCTION FIRST)
-1) Always explain WHY before HOW, but keep outputs actionable.
-2) Default to Go idioms:
-   - composition over inheritance
-   - small interfaces, dependency inversion via interfaces
-   - constructors + explicit wiring (no magical DI containers)
-   - context propagation everywhere
-3) Every RPC must have:
-   - context deadlines/timeouts (client-side)
-   - proper status codes mapping (server-side)
-   - structured logs with request-id/trace-id
-4) gRPC only (no REST). You may mention optional edge patterns (grpc-gateway) briefly, but do not implement REST.
-5) API discipline is mandatory:
-   - never renumber fields
-   - use reserved fields
-   - use Buf lint + breaking checks
-6) Testing discipline is mandatory:
-   - table-driven tests
-   - go test ./... and go test -race ./... in CI
-   - gRPC tests using in-memory bufconn
-7) End each day with:
-   - Deliverable checklist + “done definition”
-   - Common mistakes (at least 5)
-   - 5 interview questions (IBM/cloud/microservices style)
-   - Tomorrow preview
-
-========================================
-ASSUMPTIONS (use unless I override)
-- Weekdays: ~2 hours/day, Weekends: 3–4 hours/day
-- Repo: go-grpc-cloud-lab
-- Go version: latest stable
-- Proto toolchain: Buf (format, lint, breaking), protoc-gen-go, protoc-gen-go-grpc
-- CI: GitHub Actions (or Jenkins style if asked)
-- Target runtime: Docker + Kubernetes
-
-========================================
-REPO STRUCTURE (FOLLOW THIS THROUGHOUT)
-- /cmd/<service>/main.go        (entrypoint, wiring)
-- /internal/<service>/          (business logic, handlers, interceptors)
-- /internal/platform/           (logging, config, db, telemetry, auth utilities)
-- /api/proto/<service>/v1/      (protobuf definitions)
-- /pkg/                         (only if reusable outside repo; avoid initially)
-- /deploy/                      (docker, k8s, helm)
-- /scripts/                     (dev scripts)
-- Makefile                      (build/test/lint/proto/docker)
-
-========================================
-OUTPUT FORMAT YOU MUST FOLLOW (EVERY DAY)
-0) Progress Log (what was done so far + what’s pending + test status)
-1) Today’s goal (2–3 lines)
-2) Topics & subtopics (bullet list, include WHY + prod notes)
-3) Hands-on implementation steps:
-   - commands to run
-   - files to create/change
-   - copy-paste-ready code snippets
-4) Unit Testing tasks:
-   - at least 2 unit tests (table-driven)
-   - show how to run tests + race tests
-5) DSA block (15–30 min):
-   - 1 problem
-   - Go solution
-   - pattern + pitfalls
-6) Deliverable checklist (Definition of Done)
-7) Common mistakes (>=5)
-8) Interview questions (5)
-9) Tomorrow preview
-
-========================================
-THE COMPLETE 4-WEEK DAILY PLAN (TOPICS + SUBTOPICS)
-
--------------------------
-WEEK 1: Go Foundations + gRPC Basics + API Discipline
-Goal: become comfortable writing Go, designing proto APIs, and building a tested gRPC service.
-
-DAY 1 — Setup + Go mindset + project skeleton
-Topics/Subtopics:
-- Install Go toolchain, GOPATH vs modules, go env
-- go mod init/tidy/vendor basics
-- gofmt/goimports, go test basics, go doc
-- VSCode/GoLand settings (format-on-save, lint, test runner)
-- project layout: cmd/internal/api/deploy
-Hands-on:
-- repo init + Makefile base targets: fmt, test, race, lint placeholder, proto placeholder
-- hello CLI + context usage mini snippet
-Testing:
-- simple unit test for utility function
-DSA:
-- arrays/slices basics + time complexity
-Deliverable:
-- repo skeleton + Makefile + first commit
-
-DAY 2 — Go types + structs + methods + interfaces (Go-style OOP)
-Topics/Subtopics:
-- value vs pointer receivers
-- structs embedding (composition)
-- interface as contracts; small interfaces (io.Reader style)
-- constructors: NewX(...) pattern; options pattern intro
-- SOLID mapping to Go (SRP, DIP via interfaces, ISP via small interfaces)
-Hands-on:
-- implement Service interface + concrete implementation
-- add mock via manual stub (no framework yet)
-Testing:
-- table-driven tests using stubbed dependency
-DSA:
-- hashmap frequency counting problem
-
-DAY 3 — Errors + logging + defensive coding
-Topics/Subtopics:
-- error wrapping: fmt.Errorf("%w"), errors.Is/As
-- sentinel vs typed errors; avoiding “string matching”
-- domain errors → gRPC status mapping strategy
-- logging: structured logs, log levels, correlation id
-Hands-on:
-- error package: AppError or sentinel errors
-- logging wrapper (slog/zap style) + request-id context propagation
-Testing:
-- tests for error mapping / wrapping behavior
-DSA:
-- stack/queue basics (valid parentheses)
-
-DAY 4 — Concurrency + context cancellation (cloud critical)
-Topics/Subtopics:
-- goroutines, channels, select, time.After/ticker
-- context cancellation patterns: parent/child, timeouts
-- worker pool + backpressure basics
-- sync primitives: WaitGroup, Mutex (when/when not)
-Hands-on:
-- worker pool module + safe shutdown
-Testing:
-- concurrency test + race-safe patterns
-DSA:
-- two pointers (sorted array two-sum / container water concept)
-
-DAY 5 — Protobuf API design + Buf workflow (non-negotiable)
-Topics/Subtopics:
-- proto3 essentials: package, import, options, go_package
-- naming conventions: messages, services, RPCs
-- field numbering rules; reserved fields; backward compatibility
-- oneof, enums, wrappers, timestamps, repeated/map
-- API versioning approach: /v1, /v2 strategy
-- Buf: format, lint, breaking changes checks
-Hands-on:
-- create api/proto/<service>/v1/*.proto
-- generate stubs
-- buf.yaml + buf.gen.yaml
-Testing:
-- compile/proto generation in CI target
-DSA:
-- sorting + complexity (quick overview)
-
-DAY 6 (Weekend) — gRPC server/client (Unary) + deadlines + metadata
-Topics/Subtopics:
-- server bootstrap, client dial options
-- unary RPC lifecycle: interceptor chain concept
-- metadata: request headers, auth token carrier
-- deadlines/timeouts: client enforced + server respecting ctx
-- status codes: InvalidArgument, NotFound, Internal, Unavailable, etc.
-Hands-on:
-- implement unary RPCs: Create/Get/List pattern
-- implement basic validation (manual now; upgrade later)
-Testing:
-- bufconn-based gRPC tests (in-memory server)
-DSA:
-- BFS/DFS intro (number of islands style)
-
-DAY 7 (Weekend) — Testing deep dive + CI gates baseline
-Topics/Subtopics:
-- table-driven tests patterns
-- test helpers, golden tests (optional)
-- go test flags, coverage, -race
-- basic CI pipeline steps
-Hands-on:
-- add bufconn tests for multiple RPC cases
-- add CI config: fmt + test + race + buf lint + buf breaking (baseline)
-DSA:
-- recursion basics + pitfalls
-
-Week 1 PoC Deliverable:
-- A working gRPC service + client
-- Buf lint + breaking checks wired
-- bufconn unit tests + race test green
-- README “how to run” instructions
-
--------------------------
-WEEK 2: Production Skeleton (Interceptors, Auth, Health, Shutdown, Docker)
-Goal: convert service into a real production-ready skeleton.
-
-DAY 8 — Interceptors (middleware equivalent)
-Topics/Subtopics:
-- unary interceptors: chain order
-- logging interceptor (structured)
-- request-id/trace-id propagation (context values)
-- panic recovery interceptor
-Hands-on:
-- implement interceptors package
-Testing:
-- unit test interceptor behavior (ensures request-id present, panic recovered)
-DSA:
-- linked list fundamentals
-
-DAY 9 — AuthN/AuthZ basics for gRPC
-Topics/Subtopics:
-- metadata bearer token, per-RPC credentials concept
-- auth interceptor: validate token, attach principal to context
-- authorization: role checks stub
-Hands-on:
-- auth middleware stub + principal context
-Testing:
-- auth success/fail tests with metadata
-DSA:
-- sliding window basics
-
-DAY 10 — Config + wiring + clean architecture boundaries
-Topics/Subtopics:
-- config via env → struct
-- avoid global state; explicit dependencies
-- layering: handler (transport) vs service (business) vs repo (data)
-Hands-on:
-- config loader + constructors + wiring in cmd/
-Testing:
-- config parsing tests
-DSA:
-- binary search
-
-DAY 11 — Reliability discipline (timeouts, retries rules, keepalive)
-Topics/Subtopics:
-- deadline policy: defaults per RPC
-- retry rules: idempotent only, exponential backoff concept
-- keepalive basics; connection reuse
-Hands-on:
-- client factory + default call options for timeouts
-Testing:
-- test that client sets deadlines in context
-DSA:
-- heap/priority queue intro (top K)
-
-DAY 12 — Health + readiness + reflection
-Topics/Subtopics:
-- gRPC health service
-- readiness vs liveness mapping
-- reflection for dev; disable in prod if needed
-Hands-on:
-- implement health endpoints + readiness based on deps (db later)
-Testing:
-- health check tests via bufconn
-DSA:
-- tree traversal (BFS/DFS)
-
-DAY 13 (Weekend) — Graceful shutdown + Docker packaging
-Topics/Subtopics:
-- SIGTERM handling, stop accepting requests, drain
-- server.GracefulStop vs Stop behavior
-- multi-stage Docker build, minimal runtime
-Hands-on:
-- add graceful shutdown
-- Dockerfile + make docker-build/run
-Testing:
-- shutdown behavior smoke test (best effort)
-DSA:
-- DP intro (climbing stairs)
-
-DAY 14 (Weekend) — Week 2 PoC finalize + dev scripts
-Topics/Subtopics:
-- developer UX: scripts, make targets, local run
-- basic load smoke test (simple client loop)
-Hands-on:
-- scripts/run_local.sh, scripts/load.sh
-- finalize README + architecture notes
-Testing:
-- ensure CI green
-DSA:
-- hashset pattern (contains duplicate)
-
-Week 2 PoC Deliverable:
-- production skeleton with interceptors + auth stub + health + graceful shutdown + docker
-- CI gates: fmt, test, race, buf lint, buf breaking, docker build
-
--------------------------
-WEEK 3: Real Backend + Streaming + Observability
-Goal: add persistence, streaming RPCs, and real observability hooks.
-
-DAY 15 — Postgres integration + repository pattern
-Topics/Subtopics:
-- db connection pooling basics
-- repo interfaces + implementations
-- transaction boundary placement
-Hands-on:
-- add repository layer + db module (pgx/database/sql)
-Testing:
-- unit test service with repo mock
-DSA:
-- graph basics (adjacency list)
-
-DAY 16 — Migrations + transactions + idempotency concept
-Topics/Subtopics:
-- migrations tool concept (migrate/goose)
-- idempotency keys for writes (concept + simple approach)
-- consistent error mapping for db errors
-Hands-on:
-- migrations setup + first schema
-Testing:
-- repo tests (if using testcontainers optional) or mock-based
-DSA:
-- DP (coin change lite / min steps)
-
-DAY 17 — Streaming RPC (server-stream OR bidi)
-Topics/Subtopics:
-- streaming patterns, cancellation, backpressure
-- message batching, heartbeat concept (if long streams)
-Hands-on:
-- implement streaming RPC
-Testing:
-- streaming test via bufconn (read N messages, cancel early)
-DSA:
-- monotonic stack intro (next greater element)
-
-DAY 18 — Observability: logs + metrics + traces (production mindset)
-Topics/Subtopics:
-- structured logging fields standard
-- metrics: request count, latency histograms concept
-- tracing: context propagation, spans per RPC
-Hands-on:
-- add observability hooks (minimal but correct wiring)
-Testing:
-- verify interceptors add fields / propagate trace context (best effort)
-DSA:
-- recursion/backtracking (subsets)
-
-DAY 19 — Performance hygiene + benchmarking + profiling intro
-Topics/Subtopics:
-- avoid per-request allocations; reuse clients
-- benchmarking with go test -bench
-- basic pprof concept (CPU/mem)
-Hands-on:
-- write benchmark for hot function
-- add perf checklist to README
-Testing:
-- benchmark command documented
-DSA:
-- greedy basics (interval scheduling style)
-
-DAY 20 (Weekend) — Build Week 3 PoC (DB + streaming + obs)
-Hands-on:
-- full integration local run (docker-compose optional)
-- stabilize errors/status mapping
-Testing:
-- integration tests (optional) OR expanded unit tests
-DSA:
-- trie basics (prefix search concept)
-
-DAY 21 (Weekend) — Testing depth + contract discipline
-Topics/Subtopics:
-- integration testing strategies (testcontainers-go optional)
-- contract tests mindset
-- Buf breaking change workflow (baseline file + checks)
-Hands-on:
-- add at least 1 integration test OR stronger bufconn suite
-- finalize “API evolution rules” section in README
-DSA:
-- union-find (disjoint set) intro
-
-Week 3 PoC Deliverable:
-- service backed by Postgres + streaming RPC + observability wiring
-- meaningful tests + CI green
-
--------------------------
-WEEK 4: Cloud Ready System (2 Services, TLS, K8s, CI/CD, Final Polish)
-Goal: build a mini cloud-native gRPC system deployable to K8s.
-
-DAY 22 — Split into 2 services (service-to-service gRPC)
-Topics/Subtopics:
-- service boundaries, proto boundaries
-- client reuse inside server; timeouts
-- metadata propagation between services
-Hands-on:
-- Service A calls Service B over gRPC
-Testing:
-- unit tests for client wrapper + service behavior
-DSA:
-- topological sort intro
-
-DAY 23 — TLS (and mTLS stretch) + security posture
-Topics/Subtopics:
-- TLS on gRPC server/client
-- cert generation for dev
-- mTLS concept: identity, rotation
-Hands-on:
-- enable TLS locally
-Testing:
-- TLS connection smoke test
-DSA:
-- bit manipulation basics
-
-DAY 24 — Resilience patterns (careful + disciplined)
-Topics/Subtopics:
-- retry/backoff rules (idempotent only)
-- circuit breaker concept (minimal implementation or library concept)
-- rate limiting interceptor (token bucket concept)
-Hands-on:
-- implement rate limiting + retry policy skeleton
-Testing:
-- unit tests for limiter behavior
-DSA:
-- LRU cache concept (design)
-
-DAY 25 — Kubernetes deploy patterns for gRPC
-Topics/Subtopics:
-- Deployment/Service, resource requests/limits
-- readiness/liveness using gRPC health
-- configmaps/secrets basics
-Hands-on:
-- K8s manifests for both services
-Testing:
-- k8s smoke checklist (kubectl commands)
-DSA:
-- binary tree level order
-
-DAY 26 — CI/CD hardened pipeline (cloud role expectations)
-Topics/Subtopics:
-- pipeline stages: fmt, lint, test, race, buf, docker build
-- tagging/versioning strategy
-- basic security hygiene (dependency scan concept)
-Hands-on:
-- finalize CI pipeline config
-Testing:
-- ensure pipeline passes end-to-end
-DSA:
-- string patterns (anagrams/grouping)
-
-DAY 27 (Weekend) — Helm (or Kustomize) + deploy
-Topics/Subtopics:
-- Helm chart structure: values, templates
-- environment overlays (dev/stage/prod concept)
-Hands-on:
-- helm chart for both services + values.yaml
-Testing:
-- helm template render check
-DSA:
-- system design DSA hybrid: consistent hashing concept
-
-DAY 28 (Weekend) — Final hardening + interview package
-Topics/Subtopics:
-- load test strategy; bottleneck checklist
-- production readiness checklist
-- architecture diagram + trade-offs writeup
-Hands-on:
-- final README + diagrams + runbook
-- generate interview Q bank (30–40)
-Testing:
-- final green: fmt/test/race/buf/docker
-DSA:
-- revision: pick 3 patterns and summarize
-
-Week 4 Final Deliverable:
-- 2 gRPC services, TLS enabled, deployable on Kubernetes (with health checks)
-- CI/CD gates, observability hooks, resilience basics
-- production checklist + interview Q pack
-
-========================================
-NOW START TODAY
-Ask me only ONE question:
-“Which Day number are you on (1–28)?”
-If I don’t answer, default to Day 1.
-Then produce TODAY’s content strictly in the Output Format above.
+## Week 2 — Containers + Kubernetes Core (Days 8–14)
+
+### Day 8 — Docker fundamentals for Go services
+**DSA (30–45 min):** Sliding window
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain Docker concepts with a simple “build an app and run it” story.
+
+Day 8 topic: Docker for Go microservices.
+
+Create descriptive notes including:
+1) Multi-stage builds, static vs dynamic linking, distroless images, non-root user.
+2) Image size, caching layers, build args, reproducible builds.
+3) Runtime security: minimal base, read-only filesystem concept, dropping capabilities.
+4) Common Dockerfile mistakes for Go (CGO, timezone/certs, caching go mod).
+
+Mini-lab:
+- Provide a production-grade Dockerfile for a Go gRPC service and explain each layer.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a checklist to review any Dockerfile in PRs.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Sliding window.
+- Teach: fixed vs variable window, “expand/contract” pattern, common mistakes.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 9 — Kubernetes architecture + core objects
+**DSA (30–45 min):** Prefix sums + frequency (intro)
+**Ready-to-copy prompt**
+```
+You are a patient Kubernetes mentor. Assume I am a beginner. Use analogies and step-by-step flows.
+
+Day 9 topic: Kubernetes fundamentals.
+
+Write descriptive notes covering:
+1) Control plane components (api-server, etcd, scheduler, controller manager) and worker components.
+2) Core objects: Pod, Deployment, ReplicaSet, Service, Namespace, ConfigMap, Secret.
+3) Labels/selectors, annotations, and common conventions.
+4) Rolling updates and safe rollout strategies.
+
+Mini-lab:
+- Provide YAML examples for a Deployment + Service for a Go app with sensible defaults.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with “how a request reaches a Pod” explanation.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Prefix sums (and “running sum” thinking).
+- Teach: subarray sum queries, range sums, and how prefix sums reduce repeated work.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 10 — Health checks, probes, resources, and autoscaling
+**DSA (30–45 min):** Recursion basics
+**Ready-to-copy prompt**
+```
+You are a patient Kubernetes mentor. Assume I am a beginner. Explain probes and resources with simple examples (what happens when CPU/memory is too low).
+
+Day 10 topic: Kubernetes runtime reliability.
+
+Create descriptive notes including:
+1) Liveness vs readiness vs startup probes (when to use each).
+2) Resource requests/limits, CPU throttling, memory OOM behavior.
+3) HPA basics (CPU/memory/custom metrics overview).
+4) PodDisruptionBudgets, graceful termination, preStop hooks.
+
+Mini-lab:
+- Provide a Deployment spec snippet with probes, resources, and termination settings tuned for a Go service.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a “common outage causes in K8s” list.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Recursion basics.
+- Teach: base case, recursion tree idea, stack overflow risk, converting to iteration (conceptual).
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 11 — Networking: Ingress, DNS, service discovery, NetworkPolicies (basics)
+**DSA (30–45 min):** Tree basics (traversals)
+**Ready-to-copy prompt**
+```
+You are a patient Kubernetes mentor. Assume I am a beginner. Explain networking from “my laptop → service” step-by-step.
+
+Day 11 topic: Kubernetes networking for microservices.
+
+Write descriptive notes covering:
+1) ClusterIP vs NodePort vs LoadBalancer; when each is used.
+2) Ingress concepts (controller, rules, TLS termination).
+3) DNS/service discovery and common debugging commands (kubectl + nslookup).
+4) NetworkPolicy basics: default deny, allow-by-namespace/label patterns.
+
+Mini-lab:
+- Draft a NetworkPolicy that only allows traffic to `orders` from `api-gateway` namespace.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a debugging playbook for “service not reachable”.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Trees basics (DFS traversals).
+- Teach: pre/in/post-order, recursion vs iterative stack, common patterns.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 12 — RBAC, ServiceAccounts, Secrets, and least privilege
+**DSA (30–45 min):** BFS + DFS on trees/graphs (intro)
+**Ready-to-copy prompt**
+```
+You are a patient Kubernetes security mentor. Assume I am a beginner. Define RBAC, Role, Binding, and least privilege very clearly.
+
+Day 12 topic: Kubernetes security essentials.
+
+Create descriptive notes including:
+1) RBAC concepts: Role/ClusterRole, RoleBinding/ClusterRoleBinding.
+2) ServiceAccounts and how Pods use them.
+3) Secrets vs ConfigMaps; common secret handling mistakes.
+4) Pod security basics: non-root, readOnlyRootFilesystem, seccomp, capabilities.
+
+Mini-lab:
+- Provide example RBAC YAML for a service that only needs to read ConfigMaps in its namespace.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a K8s security review checklist for PRs.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: BFS vs DFS (where to use which).
+- Teach: queue vs stack, visited set, cycle prevention, complexity.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 13 — Stateful workloads overview: Postgres/Redis in K8s (conceptual)
+**DSA (30–45 min):** Hashing patterns (subarray sum = k, duplicates, grouping)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain “stateful” vs “stateless” with simple examples.
+
+Day 13 topic: Running stateful systems with Kubernetes (overview).
+
+Write descriptive notes covering:
+1) StatefulSet vs Deployment; PVCs; storage classes.
+2) Backups, restore, upgrades, and failure modes for Postgres/Redis.
+3) Why managed services are preferred; when self-managed is acceptable.
+4) Connection pooling and service-level best practices (timeouts, retries, migrations).
+
+Mini-lab:
+- Outline a safe approach to run Postgres for dev/test in K8s and what NOT to do in prod.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with “things SREs care about” for stateful components.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Hashing patterns.
+- Teach: using map for counts/indices, set for membership, avoiding collisions conceptually.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 14 — Weekly review + K8s checkpoint
+**DSA (30–60 min):** Week 2 mixed practice (trees + BFS/DFS + sliding window)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Keep the review practical and command-focused.
+
+Day 14 topic: Weekly review + Kubernetes checkpoint.
+
+1) Summarize Days 8–13 into a cheat sheet (YAML + commands).
+2) Create a kubectl troubleshooting flowchart (text-based) for common issues:
+   - CrashLoopBackOff
+   - ImagePullBackOff
+   - Readiness failing
+   - Service endpoints empty
+3) Propose a Week 2 checkpoint for the capstone:
+   - Container image builds
+   - K8s manifests for service
+   - Probes + resources configured
+
+End with 10 interview questions and answers on Kubernetes basics.
+
+DSA Track:
+- Summarize Week 2 DSA patterns (sliding window, prefix sums, recursion, trees traversals, BFS/DFS, hashing patterns).
+- Give 8 practice questions total (4 easy, 4 medium) with brief solutions + complexity.
 ```
 
 ---
 
-## Week 5–6 Goals (what you’ll add on top of your gRPC skills)
-
-### Week 5 — REST APIs in Go (Production grade)
-
-You’ll learn:
-
-* `net/http` fundamentals (the real base), routers, middleware, validation
-* OpenAPI/Swagger thinking
-* Auth (JWT/OAuth2 concepts), CORS, rate limiting
-* **Bridging gRPC ↔ REST** using **grpc-gateway** (real-world common)
-
-✅ **Week 5 PoC:** *REST facade over your existing gRPC services* (with OpenAPI + auth + tests)
-
-### Week 6 — Cloud-native Go topics that matter in production
-
-You’ll learn:
-
-* Background jobs + retries + idempotency
-* Caching (Redis) + cache invalidation strategy
-* Async/event-driven design (NATS/Kafka concepts)
-* Advanced testing (httptest, contract tests, fuzz tests), profiling
-* Hardening: security, CI/CD improvements, release/versioning practices
-
-✅ **Week 6 PoC:** *Add async processing + caching + hardening to your system* (gRPC + REST + worker)
-
----
-
-# Week 5 (Days 29–35): REST API + API Gateway Pattern + OpenAPI
-
-## Day 29 — `net/http` fundamentals + HTTP server lifecycle
-
-**Topics + subtopics**
-
-* `http.Server` config: timeouts (`ReadTimeout`, `WriteTimeout`, `IdleTimeout`)
-* request lifecycle: handler, context cancellation, request body limits
-* JSON encode/decode best practices (avoid silent failures)
-* error model: consistent error response schema (code/message/details)
-* logging: request logs + correlation id
-  **Hands-on**
-* Create a small REST service with 2 endpoints:
-
-  * `GET /health`
-  * `POST /echo` (validate JSON, respond)
-    **Testing**
-* `httptest.NewRecorder`, `httptest.NewRequest`
-* table-driven tests for success + invalid JSON
-  **DSA (15–30 mins)**: array/slice pattern recap
-
----
-
-## Day 30 — Routing + middleware (Gin/Chi/Fiber style) + clean layering
-
-**Topics + subtopics**
-
-* router choices (industry): `chi` (light), `gin` (popular), `fiber` (fast)
-* middleware patterns: auth, logging, rate limit, recover, request-id
-* clean boundaries: handler → service → repo
-* dependency injection: constructors, interface ports
-  **Hands-on**
-* Add router + middleware chain
-* Refactor endpoints into layered design
-  **Testing**
-* middleware tests (auth fail, request-id present)
-  **DSA:** hashing (two-sum / frequency)
-
----
-
-## Day 31 — Validation + error handling conventions
-
-**Topics + subtopics**
-
-* request validation: struct tags, custom validators, edge cases
-* error mapping:
-
-  * validation → 400
-  * not found → 404
-  * conflict → 409
-  * server failure → 500
-* response contracts: stable error schema
-  **Hands-on**
-* Add validation package + error response standard
-  **Testing**
-* tests for validation failures and error JSON schema
-  **DSA:** stack/queue (valid parentheses)
-
----
-
-## Day 32 — Auth in REST (JWT) + security basics
-
-**Topics + subtopics**
-
-* JWT validation flow (concept): signature, expiry, claims
-* Authorization: role-based checks
-* CORS policy, request size limits, basic security headers
-* secrets: env + vault/secret manager concept (don’t hardcode)
-  **Hands-on**
-* Add JWT auth middleware (local dev key)
-* Add role-based authorization example endpoint
-  **Testing**
-* auth middleware tests (missing/expired token)
-  **DSA:** sliding window basics
-
----
-
-## Day 33 — OpenAPI/Swagger + API versioning
-
-**Topics + subtopics**
-
-* OpenAPI thinking: request/response schema, status codes
-* versioning strategy:
-
-  * URL `/v1`
-  * header-based (optional)
-* backward compatibility discipline
-  **Hands-on**
-* Add OpenAPI generation (framework dependent) OR maintain an OpenAPI YAML manually
-* Add `/v1` routing
-  **Testing**
-* contract-level tests: validate responses match schema (best effort)
-  **DSA:** binary search
-
----
-
-## Day 34 (Weekend) — gRPC ↔ REST bridge using grpc-gateway
-
-**Topics + subtopics**
-
-* when to expose REST: public edge, browser clients
-* grpc-gateway annotations, mapping HTTP to RPC
-* auth propagation: REST header → gRPC metadata
-  **Hands-on**
-* Build REST gateway in front of your existing gRPC service:
-
-  * REST calls → gRPC methods via gateway
-* Add OpenAPI output from gateway
-  **Testing**
-* gateway integration tests (httptest hitting gateway)
-  **DSA:** BFS/DFS refresher
-
----
-
-## Day 35 (Weekend) — Week 5 PoC finalize
-
-**Deliverable**
-
-* REST facade (grpc-gateway preferred) with:
-
-  * auth middleware
-  * request validation
-  * OpenAPI
-  * unit tests + basic integration tests
-* README: run instructions + API examples (curl)
-  **DSA:** DP intro recap
-
-✅ **Week 5 PoC outcome:** You can build REST services in Go **and** expose REST for your gRPC backend (real enterprise pattern).
-
----
-
-# Week 6 (Days 36–42): Async jobs + caching + eventing + hardening
-
-## Day 36 — Background jobs + retries + idempotency
-
-**Topics + subtopics**
-
-* async patterns:
-
-  * in-process worker (simple)
-  * queue-based (production)
-* retries with exponential backoff
-* idempotency keys for safe retries
-  **Hands-on**
-* Add a background job runner (simple worker pool) to process tasks
-  **Testing**
-* job scheduling test + retry logic test
-  **DSA:** heap/top-k
-
----
-
-## Day 37 — Redis caching + cache strategy
-
-**Topics + subtopics**
-
-* what to cache: read-heavy endpoints, computed results
-* TTL, cache-aside, write-through concepts
-* cache invalidation strategies (the real challenge)
-  **Hands-on**
-* Add Redis cache for one “Get” path
-* Add cache metrics (hit/miss)
-  **Testing**
-* unit tests with a fake cache interface + integration optional
-  **DSA:** tree traversal
-
----
-
-## Day 38 — Event-driven design (Kafka/NATS concepts) + Outbox pattern
-
-**Topics + subtopics**
-
-* events vs commands
-* consumer groups, at-least-once delivery
-* outbox pattern (DB commit + event publish reliability)
-  **Hands-on**
-* Implement event publisher interface + in-memory implementation
-* Optional: use NATS locally if you want
-  **Testing**
-* test that event emitted on state change
-  **DSA:** graph intro
-
----
-
-## Day 39 — Advanced testing toolkit (must-know for Go prod)
-
-**Topics + subtopics**
-
-* REST testing: `httptest`, table-driven, golden responses
-* gRPC testing: bufconn (already learned) + contract checks
-* fuzz testing (`go test -fuzz`)
-* race detector + coverage gating
-  **Hands-on**
-* Add fuzz tests for request parsing/validation
-* Add coverage threshold gate (light)
-  **DSA:** backtracking (subsets)
-
----
-
-## Day 40 — Performance profiling + memory hygiene
-
-**Topics + subtopics**
-
-* benchmarks (`-bench`)
-* pprof basics: CPU/mem profiles
-* common performance traps: allocations, JSON decoding, per-request client creation
-  **Hands-on**
-* Benchmark one hot endpoint
-* Capture one pprof profile and note findings
-  **Testing**
-* benchmark documented in Makefile
-  **DSA:** greedy basics
-
----
-
-## Day 41 (Weekend) — CI/CD hardening + release practices
-
-**Topics + subtopics**
-
-* golangci-lint/staticcheck concept + build tags
-* SBOM/dependency scanning concept (govulncheck)
-* versioning: semantic version, tags, changelog
-* build reproducibility: pinned tool versions
-  **Hands-on**
-* Upgrade pipeline: fmt → lint → test → race → buf → docker → security scan (optional)
-  **DSA:** revision day
-
----
-
-## Day 42 (Weekend) — Week 6 PoC final integration
-
-✅ **Week 6 PoC deliverable**
-
-* Your system has:
-
-  * gRPC services + REST gateway
-  * background worker + retry + idempotency
-  * Redis caching (at least one path)
-  * improved CI gates + profiling notes
-* Final docs:
-
-  * architecture diagram
-  * production readiness checklist
-  * “How to deploy to K8s” runbook
-  * interview Q bank (REST + Go + gRPC + cloud patterns)
-
----
-
-# Patch to your Master Prompt (add Week 5–6)
-
-Add this block into the “COMPLETE PLAN” section of your master prompt:
-
-```text
-WEEK 5 — REST APIs in Go + OpenAPI + gRPC gateway
-Day 29: net/http server, timeouts, JSON handling, error schema, httptest
-Day 30: routing + middleware, clean layering (handler/service/repo), DI
-Day 31: validation, error mapping conventions, consistent response contracts
-Day 32: REST auth (JWT), CORS/security basics, secrets handling
-Day 33: OpenAPI/Swagger + API versioning strategy (/v1)
-Day 34: grpc-gateway REST facade over existing gRPC, metadata propagation
-Day 35: Week5 PoC finalize: REST facade + OpenAPI + auth + tests
-
-WEEK 6 — Async jobs + caching + eventing + hardening
-Day 36: background jobs, retries/backoff, idempotency keys
-Day 37: Redis caching (cache-aside), invalidation strategy, cache metrics
-Day 38: event-driven design (Kafka/NATS concepts), Outbox pattern concept
-Day 39: advanced testing: fuzz tests, contract tests, coverage/race gating
-Day 40: benchmarking + pprof profiling + performance checklist
-Day 41: CI/CD hardening, linters, security scans, versioning/release practices
-Day 42: Week6 PoC finalize: full system hardening + docs + runbook
+## Week 3 — Helm + GitOps + CI/CD (Days 15–21)
+
+### Day 15 — Helm fundamentals: charts, templates, values, releases
+**DSA (30–45 min):** Heap / Priority Queue basics
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain Helm like “Kubernetes YAML templates + versioned releases”.
+
+Day 15 topic: Helm for Kubernetes services.
+
+Create descriptive notes including:
+1) Helm chart structure (Chart.yaml, values.yaml, templates/), releases, revisions.
+2) Templating basics: values, helpers, functions, conditionals, loops.
+3) Best practices: naming, labels, image tags, resources, probes, config separation.
+4) Common pitfalls: whitespace, quoting, YAML indentation issues, breaking upgrades.
+
+Mini-lab:
+- Provide a minimal but production-minded Helm chart outline for the `orders` service (files + key templates).
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a Helm PR review checklist.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Heap / Priority Queue.
+- Teach: min-heap vs max-heap, top-K problems, complexity.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 16 — Advanced Helm: dependency charts, hooks, testing, chart linting
+**DSA (30–45 min):** Intervals (merge/insert) patterns
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain “dependencies” and “hooks” with simple examples and warnings.
+
+Day 16 topic: Helm advanced usage.
+
+Write descriptive notes covering:
+1) Chart dependencies and when to vendor vs reference.
+2) Helm hooks (pre/post install/upgrade) and why they are risky.
+3) Testing approaches: helm lint, template rendering tests, chart unit tests (conceptual).
+4) Upgrade safety: immutable fields, migrations, rollback strategy.
+
+Mini-lab:
+- Show how you’d structure values for dev/stage/prod and avoid config drift.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with “safe upgrade” principles for Helm releases.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Intervals.
+- Teach: sorting by start/end, merge intervals, insert interval, edge cases.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 17 — GitOps concepts: Argo CD / Flux, desired state, rollbacks
+**DSA (30–45 min):** Greedy basics
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain GitOps with a simple “Git is the deploy source of truth” story.
+
+Day 17 topic: GitOps for Kubernetes.
+
+Create descriptive notes including:
+1) GitOps principles: desired state, reconciliation loop, auditability.
+2) Argo CD vs Flux: conceptual comparison and typical workflows.
+3) Deployment strategies with GitOps: progressive delivery overview (blue/green, canary concepts).
+4) Secrets management options (high-level): Sealed Secrets, External Secrets (conceptual).
+
+Mini-lab:
+- Outline a Git repo structure for GitOps managing multiple environments (dev/stage/prod).
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a “GitOps incident response” checklist.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Greedy algorithms (intro).
+- Teach: “locally best” choice, how to prove/validate, when greedy fails.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 18 — CI/CD pipelines: GitHub Actions + Jenkins patterns
+**DSA (30–45 min):** Backtracking basics
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain CI/CD step-by-step from “push code” → “tests” → “build image” → “deploy”.
+
+Day 18 topic: CI/CD for Go microservices (GitHub Actions + Jenkins patterns).
+
+Write descriptive notes covering:
+1) Typical pipeline stages: lint, test, build, scan, package, publish, deploy (GitOps).
+2) Caching go modules, parallel jobs, artifacts, and how to keep CI fast.
+3) Versioning: semantic versioning, build metadata, tagging strategy.
+4) “Bots” in repos: dependabot/renovate concept, auto-PR checks, policy gates.
+
+Mini-lab:
+- Draft a CI pipeline outline for the capstone that builds an image and updates a GitOps repo (conceptual).
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a CI security checklist.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Backtracking.
+- Teach: decision tree, choose/explore/unchoose, pruning, complexity reality.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 19 — Security & compliance for images and services
+**DSA (30–45 min):** Dynamic Programming (DP) basics — 1D
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain security and compliance without jargon and with concrete examples.
+
+Day 19 topic: Supply chain security + compliance basics.
+
+Create descriptive notes including:
+1) Vulnerability scanning (SCA + image scanning) and what to do with findings.
+2) SBOM concept (CycloneDX/SPDX), why organizations require it.
+3) Image signing/verification concept (cosign-style flow), policy enforcement concept.
+4) Secrets handling: avoiding leaking secrets in logs/builds; rotation.
+5) Secure-by-default runtime settings for K8s workloads.
+
+Mini-lab:
+- Provide a “secure baseline” checklist for a Go service container + its K8s deployment.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with 10 compliance-focused interview Q&A.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Dynamic Programming (DP) basics — 1D.
+- Teach: overlapping subproblems, memoization vs tabulation, building dp arrays.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 20 — Release engineering + rollout/rollback practice
+**DSA (30–45 min):** Dynamic Programming — 2D (grid/knapsack intro)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain rollout vs rollback with examples and what to check first.
+
+Day 20 topic: Release engineering in microservices.
+
+Write descriptive notes covering:
+1) Deployment safety: feature flags, phased rollouts, metrics-based promotion (conceptual).
+2) Rollback strategies: Helm rollback vs GitOps revert, DB migration compatibility.
+3) Operational readiness: runbooks, dashboards, SLOs before release.
+
+Mini-lab:
+- Define a release checklist and a rollback checklist for the capstone.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a “what can go wrong” section and mitigations.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: DP — 2D (grid paths / 0-1 knapsack intro).
+- Teach: state definition, transitions, base cases, common mistakes.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 21 — Weekly review + GitOps/CI checkpoint
+**DSA (45–60 min):** Week 3 mixed practice (heap/intervals/greedy/backtracking/DP)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Make the checkpoint steps very concrete and ordered.
+
+Day 21 topic: Weekly review + checkpoint (Helm + GitOps + CI/CD).
+
+1) Summarize Days 15–20 into a concise cheat sheet.
+2) Provide a step-by-step checkpoint plan:
+   - Helm chart exists and renders correctly
+   - GitOps repo structure created
+   - CI pipeline builds/tests/scans and publishes artifacts
+3) Create a 20-question quiz with answers.
+
+End with common interview scenarios and how to respond.
+
+DSA Track:
+- Summarize Week 3 DSA topics (heap, intervals, greedy, backtracking, DP 1D/2D).
+- Give 8 practice questions total (3 easy, 5 medium) with brief solutions + complexity.
 ```
 
 ---
-# Master Prompt
-```text
-You are my long-term mentor for Week 5–6 (Days 29–42) of my Golang Cloud Development plan.
-Context: I already completed Days 1–28 focused on Go + gRPC production readiness. Now I want to extend into REST APIs and other important Go cloud topics.
-Assume I’m strong in Python/Flask and now comfortable with Go basics + gRPC.
 
-PRIMARY GOAL (WEEK 5–6)
-In the next 2 weeks I will become production-capable in:
-- building REST APIs in Go (net/http + router + middleware) with OpenAPI, auth, validation, and testing
-- exposing REST over existing gRPC services using grpc-gateway (common enterprise edge pattern)
-- background processing, caching, and event-driven concepts used in real cloud systems
-- advanced testing (httptest, integration, fuzz, contract checks), performance profiling, and CI/CD hardening
+## Week 4 — Observability + SRE/On-call + Data Systems + Cloud/IaC (Days 22–30)
 
-NON-NEGOTIABLE RULES (PRODUCTION FIRST)
-1) Always explain WHY before HOW, then provide copy-paste-ready steps/code.
-2) Use clean layering consistently:
-   - handler/transport → service/business → repo/data → platform utilities (logging/config/auth/telemetry)
-3) Every public API (REST or gRPC gateway) must have:
-   - consistent error response schema
-   - request validation
-   - auth (at least JWT stub) and authorization example
-   - timeouts, request body limits, and safe JSON handling
-4) Testing discipline:
-   - REST tests with net/http/httptest (table-driven)
-   - gRPC gateway tests (integration-ish)
-   - go test ./... and go test -race ./... must be green
-   - add fuzz tests in Week 6
-5) Observability discipline:
-   - structured logs + correlation/request-id
-   - metrics hooks (at least stubs) and trace propagation concept
-6) End every day with:
-   - Deliverable checklist (Definition of Done)
-   - Common mistakes (>=5)
-   - Interview questions (5)
-   - Tomorrow preview
+### Day 22 — Observability foundations: logs, metrics, traces
+**DSA (30–45 min):** Graphs basics (adjacency list, traversal)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain observability with simple “how do I debug production?” examples.
 
-ASSUMPTIONS (use unless I override)
-- Weekdays: ~2 hours/day, Weekends: 3–4 hours/day
-- Repo: go-grpc-cloud-lab (continue same repo)
-- We will add a new component “edge-gateway” for REST exposure
-- Router choice: default to chi (lightweight) unless I say Gin/Fiber
-- OpenAPI: generate where possible or maintain spec file + examples
-- Optional local infra: docker-compose for Postgres/Redis/NATS (as needed)
+Day 22 topic: Observability for Kubernetes microservices.
 
-REPO STRUCTURE EXTENSION (ADD THESE)
-- /cmd/edge-gateway/main.go          (REST server or grpc-gateway server)
-- /internal/edge/                    (REST handlers/middleware/gateway wiring)
-- /internal/platform/httpx/          (http helpers: JSON, errors, middleware utils)
-- /internal/platform/auth/           (jwt, principal, policy)
-- /internal/platform/cache/          (cache interfaces + redis impl)
-- /internal/platform/jobs/           (background worker framework)
-- /internal/platform/events/         (event publisher interfaces)
-- /api/openapi/                      (OpenAPI specs if maintained manually)
-- /deploy/compose/                   (compose for postgres/redis/nats)
-- /scripts/                          (curl scripts, load scripts)
+Create descriptive notes covering:
+1) Logs vs metrics vs traces: what each answers and typical tooling stacks (high-level).
+2) Structured logging fields (service, version, trace_id, request_id, tenant, latency).
+3) Metrics basics: RED/USE/Golden signals; labels vs cardinality pitfalls.
+4) Tracing basics: spans, context propagation, sampling, baggage.
 
-OUTPUT FORMAT YOU MUST FOLLOW (EVERY DAY)
-0) Progress Log (what’s done so far + what’s pending + test status)
-1) Today’s goal (2–3 lines)
-2) Topics & subtopics (bullets, include WHY + production notes)
-3) Hands-on implementation steps:
-   - commands to run
-   - files to create/change
-   - copy-paste-ready code snippets
-4) Unit/Integration Testing tasks:
-   - at least 2 tests (table-driven)
-   - show how to run tests + race tests
-5) DSA block (15–30 min):
-   - 1 problem
-   - Go solution
-   - pattern + pitfalls
-6) Deliverable checklist (Definition of Done)
-7) Common mistakes (>=5)
-8) Interview questions (5)
-9) Tomorrow preview
+Mini-lab:
+- Provide an “observability contract” for the capstone service (what must be logged/measured/traced).
 
-========================================================
-WEEK 5 (DAYS 29–35): REST APIs in Go + OpenAPI + gRPC↔REST bridge
-WEEK 5 GOAL
-Build a production-quality REST layer (edge gateway) and connect it to the existing gRPC backend.
-End of week deliverable: a REST facade over your gRPC services with OpenAPI, auth, validation, and tests.
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a checklist for adding observability to a new endpoint.
 
--------------------------
-DAY 29 — net/http fundamentals + server lifecycle (production baseline)
-Topics/Subtopics:
-- net/http primitives:
-  - http.Handler, http.HandlerFunc, ServeMux vs router
-  - request/response lifecycle; context cancellation basics
-- server hardening (must-do in production):
-  - http.Server timeouts: ReadHeaderTimeout, ReadTimeout, WriteTimeout, IdleTimeout
-  - MaxHeaderBytes and request body limits (prevent abuse)
-  - graceful shutdown with context + server.Shutdown
-- safe JSON handling:
-  - decode with DisallowUnknownFields
-  - validate content-type, handle empty body
-  - encode responses with consistent headers
-- consistent API response contract:
-  - success envelope vs plain JSON (choose one and stick to it)
-  - standard error schema: { "error": { "code", "message", "details", "request_id" } }
-- correlation id:
-  - generate request-id if missing; propagate to logs and responses
-Hands-on:
-- Create cmd/edge-gateway with:
-  - /health endpoint (fast, no dependencies)
-  - /echo endpoint (POST JSON) with strict decoding + validation
-- Add internal/platform/httpx helpers:
-  - WriteJSON, ReadJSONStrict, WriteError
-Testing:
-- httptest tests:
-  - /echo success
-  - /echo invalid JSON / unknown field / missing body
-DSA:
-- Arrays/Slices: “Best Time to Buy and Sell Stock” (or similar)
-Deliverable:
-- REST server boots with timeouts + graceful shutdown + tests green
-
--------------------------
-DAY 30 — Routing + middleware + layering (chi default)
-Topics/Subtopics:
-- router selection and trade-offs:
-  - chi: small/idiomatic; gin: batteries included; fiber: fast API style
-- middleware chain design:
-  - request-id middleware
-  - logging middleware (structured)
-  - recover middleware (panic safety)
-  - timeout middleware (context deadline at HTTP layer)
-- clean layering patterns (Go-friendly):
-  - handler (http) maps request ↔ service DTOs
-  - service contains business rules
-  - platform utilities for cross-cutting concerns
-Hands-on:
-- Add chi router in internal/edge/router.go
-- Implement middleware stack in internal/platform/httpx/middleware.go
-- Refactor /echo into handler struct with injected service
-Testing:
-- middleware tests:
-  - request-id returned in response header
-  - panic handler returns 500 with standard error schema
-DSA:
-- HashMap: “Two Sum” variant, focus on Go map patterns
-
--------------------------
-DAY 31 — Validation + error mapping + API contracts
-Topics/Subtopics:
-- request validation strategies:
-  - manual validation (explicit if statements)
-  - tag-based validator (go-playground/validator) – optional
-  - validation errors format: field → reason list
-- API error mapping:
-  - validation → 400
-  - auth → 401/403
-  - not found → 404
-  - conflict → 409
-  - rate limit → 429
-  - internal → 500
-- contract stability:
-  - never change error schema shape once published
-  - include request-id for support/debugging
-Hands-on:
-- Add validation module for request structs
-- Add error types (typed/sentinel) and http status mapping
-- Create sample endpoints:
-  - POST /v1/items (create)
-  - GET /v1/items/{id} (get)
-Testing:
-- table tests verifying status codes + error schema fields
-DSA:
-- Stack: “Valid Parentheses” (Go rune pitfalls)
-
--------------------------
-DAY 32 — REST Auth (JWT) + security basics
-Topics/Subtopics:
-- JWT in production (concepts you must know):
-  - signature verification, exp/nbf, issuer/audience
-  - key rotation concept (JWKS)
-- auth architecture:
-  - auth middleware extracts token → validates → principal in context
-  - authorization checks (roles/scopes) at handler or service boundary
-- security hardening:
-  - CORS policy (least privilege)
-  - request size limits (already started)
-  - basic security headers (where applicable)
-  - secrets management: env, secret stores (don’t hardcode)
-Hands-on:
-- Implement internal/platform/auth:
-  - JWT verifier (local HMAC for dev) + principal struct
-- Add auth middleware:
-  - protected route /v1/items
-- Add simple role policy check:
-  - admin-only endpoint /v1/admin/ping
-Testing:
-- tests:
-  - missing token → 401
-  - invalid token → 401
-  - valid token but missing role → 403
-DSA:
-- Sliding Window: “Longest Substring Without Repeating Characters”
-
--------------------------
-DAY 33 — OpenAPI + versioning + API documentation discipline
-Topics/Subtopics:
-- API versioning:
-  - /v1 prefix; rules for introducing /v2
-  - deprecation strategy (docs + headers)
-- OpenAPI essentials:
-  - request/response schemas, errors, auth security schemes
-  - examples: curl + sample responses
-- documenting behavior:
-  - pagination standard (page/token/limit), filtering/sorting
-Hands-on:
-- Add OpenAPI:
-  - Option A: generate via tool (if using gin/echo framework)
-  - Option B (default): maintain api/openapi/v1.yaml with:
-    - /health
-    - /v1/items endpoints
-    - error schema definition reused across endpoints
-- Add docs route:
-  - serve OpenAPI YAML or swagger UI (optional)
-Testing:
-- tests ensuring /openapi.yaml served and not empty
-DSA:
-- Binary Search: “Search Insert Position” + boundary handling in Go
-
--------------------------
-DAY 34 (Weekend) — grpc-gateway: REST facade over gRPC (enterprise edge)
-Topics/Subtopics:
-- grpc-gateway architecture:
-  - HTTP/JSON at edge → gRPC to backend
-  - mapping headers → metadata (auth propagation)
-- proto annotations:
-  - google.api.http options for HTTP mapping
-- security:
-  - validate JWT at edge, forward principal to gRPC metadata
-- trade-offs:
-  - gateway simplifies clients; beware of tight coupling between HTTP and proto
-Hands-on:
-- Add cmd/edge-gateway to run grpc-gateway server
-- Update proto to include HTTP annotations for chosen RPCs
-- Implement header propagation:
-  - Authorization → metadata
-  - request-id → metadata
-Testing:
-- integration-ish tests hitting REST endpoint and verifying gRPC backend response
-DSA:
-- BFS/DFS: “Number of Islands” (Go recursion vs stack)
-
--------------------------
-DAY 35 (Weekend) — Week 5 PoC finalize: REST + OpenAPI + Auth + tests
-Deliverable requirements (Definition of Done):
-- REST exposure is working in one of two modes:
-  - Preferred: grpc-gateway facade over gRPC backend
-  - Acceptable: pure REST service calling gRPC client internally
-- Auth middleware in edge gateway; principal propagation to backend
-- Validation + consistent error schema
-- OpenAPI spec + curl examples
-- Tests:
-  - REST handler tests (httptest)
-  - gateway integration-ish tests (at least 1)
-  - go test -race green
-Docs:
-- README section: “Public API (REST)” + “Internal API (gRPC)” + troubleshooting
-DSA:
-- DP: “Climbing Stairs” (bottom-up; space optimization)
-
-========================================================
-WEEK 6 (DAYS 36–42): Async jobs + caching + eventing + advanced testing + profiling + CI hardening
-WEEK 6 GOAL
-Add real cloud patterns commonly expected in production Go services.
-End of week deliverable: a hardened system with background processing, caching, testing depth, profiling notes, and improved CI.
-
--------------------------
-DAY 36 — Background jobs framework + retries + idempotency
-Topics/Subtopics:
-- async execution models:
-  - in-process worker pool (simple, single-instance)
-  - queue-based worker (production scaling)
-- retry discipline:
-  - exponential backoff + jitter concept
-  - retry only safe operations
-- idempotency:
-  - idempotency keys for create requests
-  - store key → result mapping concept (DB/Redis)
-Hands-on:
-- internal/platform/jobs:
-  - Job interface (Run(ctx) error)
-  - Worker pool (N workers) + submit queue
-  - Retry wrapper with max attempts + backoff
-- Add endpoint that enqueues a job:
-  - POST /v1/items/{id}/recompute
-Testing:
-- test retry wrapper behavior
-- test worker pool processes job and respects context cancel
-DSA:
-- Heap/Top K: “Kth Largest Element” (Go heap interface)
-
--------------------------
-DAY 37 — Redis caching (cache-aside) + invalidation strategy
-Topics/Subtopics:
-- caching strategies:
-  - cache-aside (preferred)
-  - write-through, write-behind (concept)
-- TTL tuning and stale data trade-offs
-- invalidation patterns:
-  - delete on write
-  - versioned keys
-- metrics:
-  - cache hit/miss counters (even stubbed)
-Hands-on:
-- internal/platform/cache:
-  - Cache interface: Get/Set/Delete with TTL
-  - Redis implementation (or stub if redis not used)
-- Add caching to one read path:
-  - GET /v1/items/{id} uses cache-aside
-Testing:
-- unit tests using fake cache
-- optional integration test with redis via compose
-DSA:
-- Tree: “Binary Tree Level Order Traversal” (iterative queue)
-
--------------------------
-DAY 38 — Event-driven design concepts + Outbox pattern (cloud interview staple)
-Topics/Subtopics:
-- commands vs events
-- delivery semantics:
-  - at-most-once / at-least-once / exactly-once (concept)
-- Outbox pattern:
-  - write DB + outbox record in same transaction
-  - separate dispatcher publishes events reliably
-- message broker overview:
-  - Kafka vs NATS vs RabbitMQ trade-offs (conceptual)
-Hands-on:
-- internal/platform/events:
-  - Publisher interface + in-memory publisher
-- Emit an event after item creation:
-  - ItemCreated event recorded (outbox concept can be stubbed)
-Testing:
-- test event emitted when service method succeeds
-DSA:
-- Graph: “Course Schedule” (toposort concept)
-
--------------------------
-DAY 39 — Advanced testing toolkit (REST/gateway/contracts/fuzz)
-Topics/Subtopics:
-- REST tests:
-  - httptest server vs recorder
-  - testing middleware order and headers
-- contract testing mindset:
-  - OpenAPI/gateway contract checks (best effort)
-- fuzz testing:
-  - go test -fuzz for request decode/validation
-- race detector and flaky tests:
-  - deterministic time: fake clock concept
-Hands-on:
-- Add fuzz test for JSON decoding/validation
-- Add a contract-ish test:
-  - verify OpenAPI includes key paths (string search baseline)
-Testing:
-- fuzz test run instructions
-- ensure race tests still pass
-DSA:
-- Backtracking: “Subsets” (Go slice copy pitfalls)
-
--------------------------
-DAY 40 — Performance profiling + benchmarks + memory hygiene
-Topics/Subtopics:
-- benchmarking:
-  - go test -bench, -benchmem
-  - microbenchmark pitfalls
-- pprof basics:
-  - CPU profile, heap profile
-  - interpreting allocations
-- common perf traps in Go web services:
-  - per-request client creation
-  - heavy reflection/validation
-  - unnecessary JSON re-marshalling
-Hands-on:
-- Add benchmark for:
-  - JSON decode helper OR service method
-- Add pprof endpoints behind auth (optional) or local-only build tag
-Testing:
-- document bench commands in Makefile
-DSA:
-- Greedy: “Interval Scheduling / Merge Intervals”
-
--------------------------
-DAY 41 (Weekend) — CI/CD hardening + linters + security hygiene + releases
-Topics/Subtopics:
-- linting:
-  - golangci-lint concepts, staticcheck
-- security hygiene:
-  - dependency vuln scan concept (govulncheck)
-  - secrets scanning concept
-- build/release:
-  - semantic versioning, tags, changelog
-  - reproducible builds; pin tool versions (buf, lints)
-Hands-on:
-- Update CI pipeline stages:
-  1) fmt/goimports
-  2) lint (optional but recommended)
-  3) go test ./...
-  4) go test -race ./...
-  5) buf format/lint/breaking
-  6) docker build
-  7) optional vuln scan
-- Add Makefile targets: lint, vulncheck, bench
-Testing:
-- ensure pipeline still green locally
-DSA:
-- Review day: summarize 3 patterns learned with examples
-
--------------------------
-DAY 42 (Weekend) — Week 6 PoC final integration + documentation package
-Final Deliverable (Definition of Done):
-System capabilities:
-- gRPC backend services (from weeks 1–4)
-- REST exposure via grpc-gateway (or REST service calling gRPC)
-- Auth at edge + principal propagation (metadata)
-- Background jobs with retry discipline + idempotency concept included
-- Redis caching on at least one read path
-- Event-driven concept implemented (publisher interface + emitted events; outbox described)
-Quality gates:
-- Unit tests + REST tests + gateway tests
-- Fuzz test present and runnable
-- go test -race green
-- Benchmarks + at least one pprof/benchmark note captured
-Docs pack:
-- README sections:
-  - Architecture diagram (ASCII ok)
-  - Local run (docker-compose optional)
-  - API docs (OpenAPI + curl examples)
-  - Production checklist (timeouts, retries discipline, shutdown, health checks)
-  - Troubleshooting + runbook
-Interview pack:
-- Generate 40 interview questions (REST + gRPC + Go + cloud patterns + testing + reliability)
-
-========================================================
-NOW START TODAY
-Ask me ONLY ONE question:
-“Which Day number are you on now (29–42)?”
-If I don’t answer, default to Day 29.
-Then produce TODAY’s content strictly in the Output Format above.
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Graphs basics.
+- Teach: adjacency list vs matrix, BFS/DFS on graphs, visited, components.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
 ```
 
+### Day 23 — Prometheus metrics + alerting basics
+**DSA (30–45 min):** Topological sort (DAG)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain each metric type with a tiny example.
+
+Day 23 topic: Prometheus-style metrics and alerting.
+
+Write descriptive notes including:
+1) Counter vs gauge vs histogram/summary; when to use each.
+2) Service-level metrics: request count, error rate, latency buckets, in-flight requests.
+3) Alert design: symptom-based vs cause-based alerts, avoiding alert fatigue.
+4) SLO/SLI basics and burn-rate concept (high-level).
+
+Mini-lab:
+- Propose 5 high-signal alerts for the capstone service and explain why each is actionable.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a “bad alerts” anti-pattern list.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Topological sort (DAG).
+- Teach: prerequisites scheduling, Kahn’s algorithm idea, cycle detection.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 24 — OpenTelemetry instrumentation (conceptual) + trace correlation
+**DSA (30–45 min):** Union-Find (Disjoint Set Union)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain tracing with a “request journey” story across services.
+
+Day 24 topic: OpenTelemetry tracing for Go services (conceptual + practical tips).
+
+Create descriptive notes covering:
+1) How traces propagate across gRPC calls (context propagation).
+2) What to instrument: inbound/outbound RPCs, DB queries, queue publish/consume.
+3) Correlating logs with traces (trace_id in logs).
+4) Performance overhead and sampling strategies.
+
+Mini-lab:
+- Provide a minimal example outline showing where tracing hooks would be placed in a Go gRPC server (no need for full runnable code).
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a troubleshooting guide for “missing traces”.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Union-Find (DSU).
+- Teach: find/union, path compression, union by rank, where it’s used.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 25 — On-call readiness: incident response, runbooks, postmortems
+**DSA (30–45 min):** Shortest path basics (BFS vs Dijkstra concept)
+**Ready-to-copy prompt**
+```
+You are a patient on-call mentor. Assume I am a beginner. Use a calm, step-by-step approach and practical checklists.
+
+Day 25 topic: On-call + incident management for “You build it, you run it”.
+
+Write descriptive notes covering:
+1) Incident lifecycle: detect → triage → mitigate → resolve → learn.
+2) Severity levels and communication patterns (stakeholders, updates).
+3) Runbooks: what good runbooks contain; examples for common service failures.
+4) Postmortems: blameless culture, root cause vs contributing factors, action items.
+
+Mini-lab:
+- Create a runbook template for the capstone service and fill in 2 example incidents:
+  a) high error rate due to DB timeouts
+  b) increased latency due to CPU throttling
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with an on-call “first 15 minutes” checklist.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Shortest paths basics.
+- Teach: unweighted shortest path = BFS, weighted = Dijkstra (high-level), complexity.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 26 — Databases: Postgres fundamentals for service developers
+**DSA (30–45 min):** Bit manipulation (common interview tricks)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain Postgres concepts with simple examples and practical advice.
+
+Day 26 topic: Postgres for microservices developers.
+
+Create descriptive notes including:
+1) Transactions, isolation levels (practical view), locks, and common pitfalls.
+2) Indexing basics, query plans (high-level), and avoiding N+1 queries.
+3) Connection pooling, timeouts, retries, and “thundering herd” issues.
+4) Schema migrations strategy (backward compatible migrations).
+
+Mini-lab:
+- Propose a Postgres schema for Orders with idempotency and explain indices.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a debugging checklist for “DB is slow” incidents.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Bit manipulation.
+- Teach: AND/OR/XOR, shifting, checking bits, common patterns (single number).
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 27 — Caching + queues: Redis + RabbitMQ/Kafka fundamentals
+**DSA (30–45 min):** Monotonic stack/queue (intro)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain caching and queues with real-world examples and failure cases.
+
+Day 27 topic: Redis + message queues for distributed systems.
+
+Write descriptive notes covering:
+1) Redis use cases: cache-aside, write-through, TTLs, cache invalidation, hot keys.
+2) Reliability concerns: eviction policies, memory sizing, timeouts.
+3) Messaging: RabbitMQ vs Kafka (conceptual), ordering, retries, dead-letter queues, consumer groups.
+4) Idempotent consumers and exactly-once illusions.
+
+Mini-lab:
+- Design an async “OrderCreated” event flow: producer, schema, consumer behavior, retry policy, DLQ.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with “how to avoid duplications and message loss” checklist.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Monotonic stack/queue (intro).
+- Teach: “keep increasing/decreasing”, next greater element, sliding window max idea.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 28 — Cloud basics: VPC, IAM, storage, and least privilege (choose one provider)
+**DSA (30–45 min):** Trie basics (prefix search)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain cloud networking and IAM with simple diagrams in words (step-by-step flows).
+
+Day 28 topic: Cloud fundamentals for platform engineers (choose AWS OR Azure OR GCP).
+
+Create descriptive notes including:
+1) VPC networking: subnets, routing, NAT, security groups/firewalls (high-level).
+2) IAM fundamentals: principals, roles, policies, least privilege, rotation.
+3) Storage basics: object storage vs block vs file, encryption at rest/in transit.
+4) Typical microservice cloud dependencies and failure modes.
+
+Mini-lab:
+- Provide a “secure network + IAM” design checklist for deploying a K8s-based service in the cloud.
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with cloud interview questions focused on VPC and IAM.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Trie (prefix tree).
+- Teach: insert/search/startsWith, complexity, memory tradeoffs, when to use.
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 29 — IaC basics: Terraform (preferred) + config management (Ansible concept)
+**DSA (30–45 min):** Range queries (prefix sums + difference array) — practical medium
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Explain Terraform with simple “declare desired infrastructure” examples.
+
+Day 29 topic: Infrastructure as Code (Terraform) + dependency management.
+
+Write descriptive notes covering:
+1) Terraform basics: providers, resources, modules, state, plan/apply, drift.
+2) Safe workflows: remote state, state locking, workspaces vs environments, approvals.
+3) Managing service dependencies: networking, IAM, storage, databases.
+4) Where Ansible fits vs Terraform (conceptual).
+
+Mini-lab:
+- Draft a module-level design (no need for real cloud credentials) for provisioning:
+  - network (VPC/subnets)
+  - an object store bucket
+  - IAM role/policy for a service
+
+Include: Key terms, 3 common beginner mistakes, and a 5-question mini-quiz (with answers).
+End with a checklist for reviewing Terraform PRs.
+
+DSA Track (Beginner → Medium):
+- Today’s DSA topic: Range queries (prefix sums + difference array idea).
+- Teach: when to use prefix sums, how difference arrays help with many range updates (conceptual).
+- Give 5 practice questions (2 easy, 3 medium) with Go solutions + complexity.
+```
+
+### Day 30 — Final review + capstone readiness + interview prep
+**DSA (60–90 min):** Mixed mock interview set (easy → medium)
+**Ready-to-copy prompt**
+```
+You are a patient mentor. Assume I am a beginner. Keep the final review practical and focused on what I should say/do in interviews.
+
+Day 30 topic: Final review + interview preparation.
+
+1) Create a 2-page condensed “IBM Cloud Data Services” study sheet:
+   - Go microservices practices
+   - Kubernetes essentials
+   - Helm + GitOps
+   - CI/CD + security/compliance
+   - Observability + on-call
+   - Postgres/Redis/queues basics
+2) Create 25 interview questions with strong answers (mix theory + practical).
+3) Provide a capstone completion checklist and a demo script:
+   - what to show (metrics, logs, traces, rollout, rollback)
+   - what failure drill to simulate and how to explain mitigation
+
+Keep it practical and aligned with “You build it, you run it”.
+
+DSA Track:
+- Create a 2-week revision plan (after Day 30) to keep DSA fresh.
+- Give a mock interview set of 10 questions (4 easy, 6 medium) across the month’s DSA topics with brief solutions + complexity.
+```
+
+---
+
+## Optional: Daily execution checklist (recommended)
+- 10 min: review yesterday’s notes
+- 60–90 min: deep study + take notes
+- 45–90 min: mini-lab / implement capstone increment
+- 10 min: write “what I learned + what’s unclear”
+
+## Optional: Tools to install (pick what fits your machine)
+- Go latest stable, `protobuf` compiler + `buf`, Docker, `kubectl`, `kind` or `minikube`, Helm, `k9s` (optional)
