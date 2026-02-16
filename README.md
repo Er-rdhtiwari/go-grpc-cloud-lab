@@ -12,9 +12,43 @@ Many interviews for this kind of role still ask **DSA (Data Structures & Algorit
 - Focus on patterns you’ll reuse: **two pointers, sliding window, BFS/DFS, heaps, DP**, etc.
 - Track for every problem: **approach**, **time complexity**, **space complexity**, and **common mistakes**.
 
+## Daily debugging micro-session (10–15 min/day)
+Debugging is a core on-call skill. Do a tiny, focused “find the bug” drill every day.
+- Use a **small Go snippet (10–25 lines)** with **one intentional bug** related to today’s topic.
+- Your workflow: **predict → run → observe → isolate → fix → re-run → write the lesson** (1–2 sentences).
+
+**Ready-to-copy prompt (add to any day)**
+```
+Create a 10–25 line Go code snippet with exactly one bug related to today’s topic.
+Ask me to debug it: first ask what I expect it to do, then give 2 hints only if I’m stuck, then provide the corrected code and explain the root cause + how to avoid it in real services.
+```
+
+**Example drill (paste into `snippet_test.go`, then run `go test`)**
+```go
+package main
+
+import "testing"
+
+func IndexOf(items []string, target string) int {
+	for i := 0; i <= len(items); i++ {
+		if items[i] == target {
+			return i
+		}
+	}
+	return -1
+}
+
+func TestIndexOf(t *testing.T) {
+	if got := IndexOf([]string{"a", "b", "c"}, "b"); got != 1 {
+		t.Fatalf("IndexOf returned %d, want 1", got)
+	}
+}
+```
+
 ## How to use this plan (simple)
 - Each day has a **ready-to-copy prompt**. Paste it into ChatGPT (or your preferred LLM) to get **beginner-friendly notes + a mini-lab**.
 - Save outputs as `notes/day-XX.md` (optional).
+- Add the **daily debugging micro-session** prompt to reinforce “production troubleshooting” skills.
 - Don’t try to master everything at once. You’ll revisit topics every week through the capstone.
 
 ## Before Day 1 (30–60 minutes)
